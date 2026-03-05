@@ -72,7 +72,7 @@ export async function POST(req: Request) {
             }
         }
 
-        return NextResponse.json({ success: true, count: createdPhotos.length });
+        return NextResponse.json({ success: true, count: createdPhotos.length, photos: createdPhotos });
     } catch (error) {
         console.error("Batch upload error", error);
         return NextResponse.json({ error: "Upload failed" }, { status: 500 });
