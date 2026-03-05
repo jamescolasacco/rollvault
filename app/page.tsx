@@ -1,63 +1,135 @@
-import Image from "next/image";
+import Link from "next/link";
+import { Button } from "@/components/Button";
+import { Camera, Film } from "lucide-react";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
+import { stat } from "fs/promises";
+import { join } from "path";
 
-export default function Home() {
+export default async function Home() {
+  const session = await getServerSession(authOptions);
+
+  // Check which demo files exist to prevent next.js SSR errors
+  const demoFiles = await Promise.all([1, 2, 3, 4, 5].map(async (frame) => {
+    try {
+      await stat(join(process.cwd(), "public", "demo", `${frame}.jpg`));
+      return true;
+    } catch {
+      return false;
+    }
+  }));
+
   return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex min-h-screen w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
+    <div className="flex flex-col min-h-screen">
+      <header className="px-6 h-16 flex items-center justify-between border-b border-border/50 sticky top-0 bg-background/80 backdrop-blur-md z-40">
+        <Link href="/" className="flex items-center gap-2 font-serif italic text-xl tracking-wide text-foreground/80 hover:text-foreground transition-colors">
+          <Film className="w-5 h-5 text-accent" />
+          <span>RollVault</span>
+        </Link>
+        <nav className="flex items-center gap-4">
+          {session ? (
+            <Link href="/dashboard">
+              <Button size="sm" variant="safelight">Dashboard</Button>
+            </Link>
+          ) : (
+            <>
+              <Link href="/login" className="text-sm text-foreground/70 hover:text-foreground transition-colors">
+                Log in
+              </Link>
+              <Link href="/register">
+                <Button size="sm" variant="safelight">Get Started</Button>
+              </Link>
+            </>
+          )}
+        </nav>
+      </header>
+
+      <main className="flex-1 flex flex-col items-center justify-center relative overflow-hidden px-6 pt-24 pb-32">
+        {/* Decorative background blur */}
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-accent/5 rounded-full blur-[100px] pointer-events-none" />
+
+        <div className="max-w-3xl text-center space-y-8 z-10 relative">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-border bg-card/50 text-xs font-mono text-foreground/60 mb-4">
+            <span className="w-2 h-2 rounded-full bg-accent animate-pulse" />
+            Now in public beta
+          </div>
+
+          <h1 className="text-5xl md:text-7xl font-bold tracking-tight text-balance">
+            Your film, <br />
+            <span className="text-foreground opacity-50 italic font-serif">beautifully displayed.</span>
           </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
+
+          <p className="text-lg md:text-xl text-foreground/60 max-w-xl mx-auto text-balance">
+            RollVault is the minimalist home for analog photographers.
+            Host your developed rolls, organize them elegantly, and share your visual vault.
           </p>
+
+          <div className="flex items-center justify-center gap-4 pt-4">
+            {session ? (
+              <Link href="/dashboard">
+                <Button size="lg" variant="safelight" className="gap-2">
+                  Visit your vault
+                  <Film className="w-4 h-4" />
+                </Button>
+              </Link>
+            ) : (
+              <Link href="/register">
+                <Button size="lg" variant="safelight" className="gap-2">
+                  Start your vault
+                  <Film className="w-4 h-4" />
+                </Button>
+              </Link>
+            )}
+            <Link href="/demo">
+              <Button size="lg" variant="outline">
+                View Demo
+              </Button>
+            </Link>
+          </div>
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+
+        {/* Abstract Film Roll Visual */}
+        <div className="mt-24 w-full max-w-5xl translate-x-4 md:translate-x-12 opacity-80 opacity-transition hover:opacity-100 duration-1000 group">
+          <div className="flex gap-4 p-4 border-y-8 border-black bg-[#0a0a0a] shadow-2xl relative overflow-hidden mix-blend-screen">
+            {/* Sprocket holes top */}
+            <div className="absolute top-0 inset-x-0 h-4 flex justify-around items-center">
+              {[...Array(30)].map((_, i) => (
+                <div key={`top-${i}`} className="w-3 h-2 bg-background rounded-[1px] opacity-20" />
+              ))}
+            </div>
+            {[1, 2, 3, 4, 5].map((frame, index) => {
+              const fileExists = demoFiles[index];
+              return (
+                <div
+                  key={frame}
+                  className="w-64 h-40 bg-card rounded flex flex-col items-center justify-center border border-border/10 overflow-hidden relative shrink-0 group-hover:-translate-x-8 transition-transform duration-1000 ease-out"
+                >
+                  <div className="absolute inset-0 bg-gradient-to-tr from-black to-zinc-800 z-0" />
+                  {/* Fallback text if image hasn't been added yet */}
+                  {!fileExists && (
+                    <div className="relative z-10 flex flex-col items-center text-center opacity-30 mt-2">
+                      <span className="font-mono text-xs text-foreground">Frame {frame}</span>
+                    </div>
+                  )}
+
+                  {/* The actual image. We hide it on error if the user hasn't dropped the file into the demo folder yet. */}
+                  {fileExists && (
+                    <img
+                      src={`/demo/${frame}.jpg`}
+                      alt={`Demo Frame ${frame}`}
+                      className="absolute inset-0 w-full h-full object-cover z-20 opacity-90 mix-blend-screen"
+                    />
+                  )}
+                </div>
+              )
+            })}
+            {/* Sprocket holes bottom */}
+            <div className="absolute bottom-0 inset-x-0 h-4 flex justify-around items-center">
+              {[...Array(30)].map((_, i) => (
+                <div key={`bot-${i}`} className="w-3 h-2 bg-background rounded-[1px] opacity-20" />
+              ))}
+            </div>
+          </div>
         </div>
       </main>
     </div>

@@ -1,0 +1,57 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  password  String
+  username  String   @unique
+  bio       String?
+  avatar    String?
+  rolls     Roll[]
+  archives  Archive[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Roll {
+  id          String   @id @default(uuid())
+  slug        String?  @unique
+  title       String
+  description String?
+  coverImage  String?
+  userId      String
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  photos        Photo[]
+  archives      Archive[]
+  dateDeveloped DateTime?
+  createdAt     DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Photo {
+  id         String   @id @default(uuid())
+  url        String
+  caption    String?
+  rollId     String
+  roll       Roll     @relation(fields: [rollId], references: [id], onDelete: Cascade)
+  orderIndex Int      @default(0)
+  createdAt  DateTime @default(now())
+}
+
+model Archive {
+  id          String   @id @default(uuid())
+  title       String
+  description String?
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  rolls       Roll[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
