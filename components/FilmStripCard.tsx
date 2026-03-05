@@ -12,7 +12,7 @@ export function FilmStripCard({ coverUrl, title, frameCount }: FilmStripCardProp
     return (
         <div className="group flex flex-col items-center w-full transition-transform duration-300 hover:scale-[1.02] cursor-pointer">
             {/* The Film Snippet */}
-            <div className="w-full relative flex flex-col bg-[#110e0c] shadow-2xl overflow-hidden rounded-sm ring-1 ring-white/5" style={{ padding: "20px 0" }}>
+            <div className="w-full relative flex flex-col bg-[#110e0c] shadow-2xl overflow-hidden rounded-sm ring-1 ring-white/5 py-3 sm:py-5">
 
                 {/* Top Edge */}
                 <div className="absolute top-0 left-0 right-0 h-[20px] w-full pointer-events-none">

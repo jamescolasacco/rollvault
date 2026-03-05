@@ -7,6 +7,7 @@ import { ArrowLeft, Settings2, Loader2, UploadCloud, Camera } from "lucide-react
 import Link from "next/link";
 import { Button } from "@/components/Button";
 import { Input } from "@/components/Input";
+import { ShareIcon } from "@/components/ShareIcon";
 import { useRouter } from "next/navigation";
 
 interface RollClientProps {
@@ -26,6 +27,7 @@ export default function RollEditorClient({ roll, archives }: RollClientProps) {
     const [editDate, setEditDate] = useState(roll.dateDeveloped ? new Date(roll.dateDeveloped).toISOString().split('T')[0] : "");
     const [editArchiveIds, setEditArchiveIds] = useState<string[]>(roll.archives.map((a: any) => a.id));
     const [editCoverImage, setEditCoverImage] = useState(roll.coverImage || "");
+    const [editShowOnProfile, setEditShowOnProfile] = useState(roll.showOnProfile ?? true);
     const [isCoverUploading, setIsCoverUploading] = useState(false);
     const coverInputRef = useRef<HTMLInputElement>(null);
 
@@ -34,7 +36,8 @@ export default function RollEditorClient({ roll, archives }: RollClientProps) {
         title: roll.title,
         description: roll.description,
         dateDeveloped: roll.dateDeveloped,
-        archives: roll.archives
+        archives: roll.archives,
+        showOnProfile: roll.showOnProfile ?? true
     });
 
     const handleSaveMetadata = async () => {
@@ -47,7 +50,8 @@ export default function RollEditorClient({ roll, archives }: RollClientProps) {
                     title: editTitle,
                     description: editDesc,
                     dateDeveloped: editDate ? new Date(editDate).toISOString() : null,
-                    archiveIds: editArchiveIds
+                    archiveIds: editArchiveIds,
+                    showOnProfile: editShowOnProfile
                 })
             });
             if (res.ok) {
@@ -56,8 +60,21 @@ export default function RollEditorClient({ roll, archives }: RollClientProps) {
                     title: updated.title,
                     description: updated.description,
                     dateDeveloped: updated.dateDeveloped,
-                    archives: updated.archives
+                    archives: updated.archives,
+                    showOnProfile: updated.showOnProfile
                 });
+
+                // Keep the editor's pending state in sync with truth!
+                setEditTitle(updated.title);
+                setEditDesc(updated.description || "");
+                if (updated.dateDeveloped) {
+                    setEditDate(new Date(updated.dateDeveloped).toISOString().split('T')[0]);
+                } else {
+                    setEditDate("");
+                }
+                setEditArchiveIds(updated.archives.map((a: any) => a.id));
+                setEditShowOnProfile(updated.showOnProfile);
+
                 setIsEditing(false);
             }
         } catch (error) {
@@ -176,11 +193,16 @@ export default function RollEditorClient({ roll, archives }: RollClientProps) {
         });
     };
 
+    const parentArchives = archives.filter((a: any) => editArchiveIds.includes(a.id));
+    const isForcedPrivate = parentArchives.some((a: any) => !a.showOnProfile);
+
+    const derivedShowOnProfile = isForcedPrivate ? false : editShowOnProfile;
+
     return (
-        <div className="max-w-5xl mx-auto mt-8 space-y-12">
+        <div className="max-w-5xl mx-auto mt-4 sm:mt-8 space-y-8 sm:space-y-12">
             <div className="flex items-start justify-between relative">
                 {isEditing ? (
-                    <div className="flex-1 max-w-2xl bg-card border border-border rounded-xl p-6 shadow-xl space-y-4">
+                    <div className="flex-1 max-w-2xl bg-card border border-border rounded-xl p-4 sm:p-6 shadow-xl space-y-4 mx-auto w-full">
                         <div className="flex items-center justify-between mb-4">
                             <h3 className="font-mono text-sm uppercase tracking-widest text-foreground/50">Edit Roll Details</h3>
                             <div className="flex items-center gap-4">
@@ -247,12 +269,35 @@ export default function RollEditorClient({ roll, archives }: RollClientProps) {
                                 </div>
                             )}
                         </div>
-                        <div className="flex items-center justify-between pt-4">
+                        <div className="space-y-2 pt-2 border-t border-border/50">
+                            <label className="text-xs font-mono uppercase text-foreground/60">Visibility</label>
+                            <label className={`flex items-center gap-3 p-2 -ml-2 rounded transition-colors w-fit ${isForcedPrivate ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer group hover:bg-white/5'}`}>
+                                <input
+                                    type="checkbox"
+                                    checked={derivedShowOnProfile}
+                                    onChange={(e) => setEditShowOnProfile(e.target.checked)}
+                                    disabled={isForcedPrivate}
+                                    className="w-4 h-4 rounded border-foreground/20 text-accent focus:ring-accent bg-transparent disabled:opacity-50"
+                                />
+                                <div className="flex flex-col">
+                                    <span className={`text-sm font-medium ${isForcedPrivate ? 'text-foreground/90' : 'text-foreground/90 group-hover:text-foreground'}`}>Show on Public Profile</span>
+                                    <span className="text-xs text-foreground/50">
+                                        {isForcedPrivate
+                                            ? "Visibility is locked because it belongs to an unlisted Archive."
+                                            : "If unchecked, this Roll is unlisted but still accessible via direct link."}
+                                    </span>
+                                </div>
+                            </label>
+                        </div>
+                        <div className="flex items-center justify-between pt-4 border-t border-border/50">
                             <div className="flex items-center gap-3">
                                 <Button size="sm" variant="safelight" onClick={handleSaveMetadata} disabled={isSaving}>
                                     {isSaving ? "Saving..." : "Save Changes"}
                                 </Button>
-                                <Button size="sm" variant="outline" onClick={() => setIsEditing(false)} disabled={isSaving}>
+                                <Button size="sm" variant="outline" onClick={() => {
+                                    setIsEditing(false);
+                                    setEditShowOnProfile(metadata.showOnProfile);
+                                }} disabled={isSaving}>
                                     Cancel
                                 </Button>
                             </div>
@@ -269,9 +314,13 @@ export default function RollEditorClient({ roll, archives }: RollClientProps) {
                             </Link>
                             <div className="flex items-center gap-4 mb-4">
                                 <h1 className="text-4xl md:text-5xl font-bold tracking-tight">{metadata.title}</h1>
-                                <button onClick={() => setIsEditing(true)} className="opacity-0 group-hover:opacity-100 transition-opacity p-2 hover:bg-white/5 rounded-full text-foreground group/btn" title="Edit Roll Details">
-                                    <Settings2 className="w-5 h-5 opacity-40 group-hover/btn:opacity-100 transition-opacity" />
-                                </button>
+
+                                <div className="flex items-center gap-1 sm:gap-2 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
+                                    <ShareIcon url={`${typeof window !== 'undefined' ? window.location.origin : ''}/${roll.user.username}/${roll.slug || roll.id}`} />
+                                    <button onClick={() => setIsEditing(true)} className="p-2 hover:bg-white/5 rounded-full text-foreground group/btn" title="Edit Roll Details">
+                                        <Settings2 className="w-5 h-5 opacity-60 sm:opacity-40 group-hover/btn:opacity-100 transition-opacity" />
+                                    </button>
+                                </div>
                             </div>
                             {metadata.description && (
                                 <p className="text-lg text-foreground/60 max-w-2xl text-balance">{metadata.description}</p>

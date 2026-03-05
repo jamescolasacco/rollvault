@@ -9,7 +9,7 @@ import { CreateArchiveForm } from "./CreateArchiveForm";
 export default async function DashboardPage({
     searchParams
 }: {
-    searchParams?: { [key: string]: string | string[] | undefined }
+    searchParams?: Promise<{ [key: string]: string | string[] | undefined }>
 }) {
     const session = await getServerSession(authOptions);
 
@@ -42,8 +42,9 @@ export default async function DashboardPage({
     const totalFrames = rolls.reduce((acc: number, roll: any) => acc + roll._count.photos, 0);
     const totalArchives = archives.length;
 
-    const showAllRolls = searchParams?.showAllRolls === "true";
-    const showAllArchives = searchParams?.showAllArchives === "true";
+    const resolvedSearchParams = await searchParams;
+    const showAllRolls = resolvedSearchParams?.showAllRolls === "true";
+    const showAllArchives = resolvedSearchParams?.showAllArchives === "true";
 
     const displayRolls = showAllRolls ? rolls : rolls.slice(0, 6);
     const displayArchives = showAllArchives ? archives : archives.slice(0, 6);

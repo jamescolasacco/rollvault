@@ -21,12 +21,13 @@ model User {
 }
 
 model Roll {
-  id          String   @id @default(uuid())
-  slug        String?  @unique
-  title       String
-  description String?
-  coverImage  String?
-  userId      String
+  id            String   @id @default(uuid())
+  slug          String?  @unique
+  title         String
+  description   String?
+  coverImage    String?
+  showOnProfile Boolean  @default(true)
+  userId        String
   user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   photos        Photo[]
   archives      Archive[]
@@ -46,10 +47,11 @@ model Photo {
 }
 
 model Archive {
-  id          String   @id @default(uuid())
-  title       String
-  description String?
-  userId      String
+  id            String   @id @default(uuid())
+  title         String
+  description   String?
+  showOnProfile Boolean  @default(true)
+  userId        String
   user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   rolls       Roll[]
   createdAt   DateTime @default(now())

@@ -17,6 +17,7 @@ export default async function ArchiveDetailsPage({ params }: { params: Promise<{
     const archive = await prisma.archive.findUnique({
         where: { id },
         include: {
+            user: { select: { username: true } },
             rolls: {
                 orderBy: { createdAt: "desc" },
                 include: {
@@ -35,7 +36,7 @@ export default async function ArchiveDetailsPage({ params }: { params: Promise<{
     return (
         <div className="space-y-8 animate-in fade-in duration-700">
             <div className="flex items-start justify-between border-b border-border/50 pb-6 relative">
-                <EditArchiveClient archive={archive} />
+                <EditArchiveClient archive={archive} username={archive.user.username} />
 
                 <div className="hidden sm:flex flex-col items-end text-right shrink-0">
                     <span className="text-xs font-mono uppercase tracking-widest text-foreground/40 mb-1">Actions</span>

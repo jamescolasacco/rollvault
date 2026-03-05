@@ -8,15 +8,17 @@ interface ShareButtonProps {
     title?: string;
     variant?: "default" | "outline" | "ghost" | "safelight";
     className?: string;
+    url?: string;
 }
 
-export function ShareButton({ title = "Share to Web", variant = "safelight", className = "" }: ShareButtonProps) {
+export function ShareButton({ title = "Share to Web", variant = "safelight", className = "", url }: ShareButtonProps) {
     const [copied, setCopied] = useState(false);
 
     const handleShare = async () => {
         try {
-            // Write current browser URL to the clipboard
-            await navigator.clipboard.writeText(window.location.href);
+            // Write the provided url or fallback to the current browser URL
+            const shareUrl = url || window.location.href;
+            await navigator.clipboard.writeText(shareUrl);
             setCopied(true);
             setTimeout(() => setCopied(false), 2000);
         } catch (err) {

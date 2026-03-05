@@ -11,7 +11,7 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
         }
 
         const { id } = await params;
-        const { title, description } = await req.json();
+        const { title, description, showOnProfile } = await req.json();
 
         const archive = await prisma.archive.findUnique({ where: { id } });
         // @ts-ignore
@@ -21,7 +21,7 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
 
         const updated = await prisma.archive.update({
             where: { id },
-            data: { title, description }
+            data: { title, description, showOnProfile: showOnProfile ?? true }
         });
 
         return NextResponse.json(updated);

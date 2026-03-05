@@ -44,7 +44,7 @@ export default async function Home() {
         </nav>
       </header>
 
-      <main className="flex-1 flex flex-col items-center justify-center relative overflow-hidden px-6 pt-24 pb-32">
+      <main className="flex-1 flex flex-col items-center justify-center relative overflow-hidden px-4 sm:px-6 pt-16 sm:pt-24 pb-20 sm:pb-32">
         {/* Decorative background blur */}
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-accent/5 rounded-full blur-[100px] pointer-events-none" />
 
@@ -64,24 +64,24 @@ export default async function Home() {
             Host your developed rolls, organize them elegantly, and share your visual vault.
           </p>
 
-          <div className="flex items-center justify-center gap-4 pt-4">
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4 w-full px-4 sm:px-0">
             {session ? (
-              <Link href="/dashboard">
-                <Button size="lg" variant="safelight" className="gap-2">
+              <Link href="/dashboard" className="w-full sm:w-auto">
+                <Button size="lg" variant="safelight" className="gap-2 w-full sm:w-auto">
                   Visit your vault
                   <Film className="w-4 h-4" />
                 </Button>
               </Link>
             ) : (
-              <Link href="/register">
-                <Button size="lg" variant="safelight" className="gap-2">
+              <Link href="/register" className="w-full sm:w-auto">
+                <Button size="lg" variant="safelight" className="gap-2 w-full sm:w-auto">
                   Start your vault
                   <Film className="w-4 h-4" />
                 </Button>
               </Link>
             )}
-            <Link href="/demo">
-              <Button size="lg" variant="outline">
+            <Link href="/demo" className="w-full sm:w-auto">
+              <Button size="lg" variant="outline" className="w-full sm:w-auto">
                 View Demo
               </Button>
             </Link>

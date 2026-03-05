@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Button } from "@/components/Button";
 import { Input } from "@/components/Input";
+import { PasswordInput } from "@/components/PasswordInput";
 import { Film } from "lucide-react";
 import { signIn } from "next-auth/react";
 
@@ -108,8 +109,7 @@ export default function RegisterPage() {
                     </div>
                     <div className="space-y-2">
                         <label className="text-sm font-medium text-foreground/80">Password</label>
-                        <Input
-                            type="password"
+                        <PasswordInput
                             required
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
@@ -118,8 +118,7 @@ export default function RegisterPage() {
                     </div>
                     <div className="space-y-2">
                         <label className="text-sm font-medium text-foreground/80">Confirm Password</label>
-                        <Input
-                            type="password"
+                        <PasswordInput
                             required
                             value={confirmPassword}
                             onChange={(e) => setConfirmPassword(e.target.value)}

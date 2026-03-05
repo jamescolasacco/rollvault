@@ -6,7 +6,7 @@ import { ShareButton } from "@/components/ShareButton";
 const PublicRollCard = ({ roll, username, index }: { roll: any, username: string, index: number }) => (
     <div className="animate-in fade-in slide-in-from-bottom-8 duration-1000 fill-mode-both" style={{ animationDelay: `${index * 150}ms` }}>
         <Link href={`/${username}/${roll.slug || roll.id}`} className="block group">
-            <div className="w-full relative flex items-center bg-[#110e0c] shadow-2xl overflow-hidden rounded-sm ring-1 ring-white/5 hover:scale-[1.01] transition-transform duration-300" style={{ padding: "30px 20px" }}>
+            <div className="w-full relative flex items-center bg-[#110e0c] shadow-2xl overflow-hidden rounded-sm ring-1 ring-white/5 hover:scale-[1.01] transition-transform duration-300 p-4 sm:py-[30px] sm:px-[20px]">
                 {/* Top Edge */}
                 <div className="absolute top-0 left-0 right-0 h-[24px] w-full pointer-events-none">
                     <svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none">
@@ -37,9 +37,9 @@ const PublicRollCard = ({ roll, username, index }: { roll: any, username: string
                         </div>
                     )}
                 </div>
-                <div className="flex-1 min-w-0 py-2 pl-6 z-10">
-                    <h3 className="font-bold text-xl sm:text-2xl truncate text-foreground group-hover:text-white transition-colors">{roll.title}</h3>
-                    <p className="text-sm font-mono text-foreground/50 mt-1 uppercase tracking-widest">{roll._count.photos} frames exposed</p>
+                <div className="flex-1 min-w-0 py-1 sm:py-2 pl-4 sm:pl-6 z-10">
+                    <h3 className="font-bold text-lg sm:text-2xl truncate text-foreground group-hover:text-white transition-colors">{roll.title}</h3>
+                    <p className="text-xs sm:text-sm font-mono text-foreground/50 mt-1 uppercase tracking-widest">{roll._count.photos} frames exposed</p>
                 </div>
                 <div className="text-xs font-mono text-accent opacity-0 group-hover:opacity-100 transition-all -translate-x-4 group-hover:translate-x-0 whitespace-nowrap hidden sm:block pr-4 z-10">
                     View Roll →
@@ -74,9 +74,11 @@ export default async function PublicProfile({ params }: { params: Promise<{ user
         include: {
             // @ts-ignore
             archives: {
+                where: { showOnProfile: true },
                 orderBy: { createdAt: "desc" },
                 include: {
                     rolls: {
+                        where: { showOnProfile: true },
                         orderBy: { createdAt: "desc" },
                         include: {
                             _count: { select: { photos: true } },
@@ -87,7 +89,7 @@ export default async function PublicProfile({ params }: { params: Promise<{ user
             },
             rolls: {
                 // @ts-ignore
-                where: { archives: { none: {} } },
+                where: { archives: { none: {} }, showOnProfile: true },
                 orderBy: { createdAt: "desc" },
                 include: {
                     _count: { select: { photos: true } },
@@ -104,18 +106,18 @@ export default async function PublicProfile({ params }: { params: Promise<{ user
     const hasContent = user.rolls.length > 0 || user.archives.some((a: any) => a.rolls.length > 0);
 
     return (
-        <div className="min-h-screen py-24 px-6 flex flex-col items-center max-w-2xl mx-auto space-y-16 relative">
+        <div className="min-h-screen py-16 sm:py-24 px-4 sm:px-6 flex flex-col items-center max-w-2xl mx-auto space-y-12 sm:space-y-16 relative">
             {/* Home Navigation */}
-            <div className="absolute top-8 left-6 sm:left-8 z-50">
-                <Link href="/" className="inline-flex items-center gap-2 font-serif italic text-xl tracking-wide text-foreground/80 hover:text-foreground transition-colors">
+            <div className="absolute top-6 sm:top-8 left-4 sm:left-8 z-50">
+                <Link href="/" className="inline-flex items-center gap-2 font-serif italic text-lg sm:text-xl tracking-wide text-foreground/80 hover:text-foreground transition-colors">
                     <Film className="w-5 h-5 text-accent" />
                     RollVault
                 </Link>
             </div>
 
             {/* Share Profile */}
-            <div className="absolute top-8 right-6 sm:right-8 z-50">
-                <ShareButton title="Share Vault" variant="outline" />
+            <div className="absolute top-6 sm:top-8 right-4 sm:right-8 z-50">
+                <ShareButton title="Share" variant="outline" />
             </div>
 
             <div className="absolute top-0 left-1/2 w-[800px] h-[400px] bg-accent/5 rounded-full blur-[120px] pointer-events-none -translate-x-1/2 -translate-y-1/2" />

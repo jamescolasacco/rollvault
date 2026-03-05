@@ -12,7 +12,7 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
 
         const { id } = await params;
         const body = await req.json();
-        const { title, description, dateDeveloped, archiveIds } = body;
+        const { title, description, dateDeveloped, archiveIds, showOnProfile } = body;
 
         // Verify ownership
         const roll = await prisma.roll.findUnique({
@@ -34,6 +34,7 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
             data: {
                 title,
                 description,
+                showOnProfile: showOnProfile ?? true,
                 // @ts-ignore
                 dateDeveloped: dateDeveloped ? new Date(dateDeveloped) : null,
                 // @ts-ignore

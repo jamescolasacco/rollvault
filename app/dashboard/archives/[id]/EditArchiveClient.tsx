@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Button } from "@/components/Button";
 import { Input } from "@/components/Input";
+import { ShareIcon } from "@/components/ShareIcon";
 
 interface EditArchiveClientProps {
     archive: {
@@ -14,13 +15,15 @@ interface EditArchiveClientProps {
         description: string | null;
         rolls: any[];
     };
+    username: string;
 }
 
-export function EditArchiveClient({ archive }: EditArchiveClientProps) {
+export function EditArchiveClient({ archive, username }: EditArchiveClientProps) {
     const router = useRouter();
     const [isEditing, setIsEditing] = useState(false);
     const [title, setTitle] = useState(archive.title);
     const [description, setDescription] = useState(archive.description || "");
+    const [showOnProfile, setShowOnProfile] = useState((archive as any).showOnProfile ?? true);
     const [saving, setSaving] = useState(false);
 
     const handleSave = async () => {
@@ -31,7 +34,7 @@ export function EditArchiveClient({ archive }: EditArchiveClientProps) {
             const res = await fetch(`/api/archives/${archive.id}`, {
                 method: "PATCH",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ title, description }),
+                body: JSON.stringify({ title, description, showOnProfile }),
             });
 
             if (res.ok) {
@@ -66,6 +69,18 @@ export function EditArchiveClient({ archive }: EditArchiveClientProps) {
                             placeholder="Add a description..."
                         />
                     </div>
+                    <label className="flex items-center gap-3 cursor-pointer group hover:bg-white/5 p-1 -ml-1 rounded transition-colors w-fit">
+                        <input
+                            type="checkbox"
+                            checked={showOnProfile}
+                            onChange={(e) => setShowOnProfile(e.target.checked)}
+                            className="w-4 h-4 rounded border-foreground/20 text-accent focus:ring-accent bg-transparent"
+                        />
+                        <div className="flex flex-col">
+                            <span className="text-sm font-medium text-foreground/90 group-hover:text-foreground">Show on Public Profile</span>
+                            <span className="text-xs text-foreground/50">If unchecked, this archive is unlisted but accessible via direct link.</span>
+                        </div>
+                    </label>
                     <div className="flex gap-2 pt-2">
                         <Button onClick={handleSave} disabled={saving} variant="safelight" size="sm">
                             {saving ? "Saving..." : "Save Changes"}
@@ -73,6 +88,7 @@ export function EditArchiveClient({ archive }: EditArchiveClientProps) {
                         <Button onClick={() => {
                             setTitle(archive.title);
                             setDescription(archive.description || "");
+                            setShowOnProfile((archive as any).showOnProfile ?? true);
                             setIsEditing(false);
                         }} disabled={saving} variant="outline" size="sm">
                             Cancel
@@ -93,13 +109,17 @@ export function EditArchiveClient({ archive }: EditArchiveClientProps) {
                     <FolderHeart className="w-6 h-6 text-accent shrink-0" />
                     <h1 className="text-4xl md:text-5xl font-bold tracking-tight truncate">{archive.title}</h1>
                 </div>
-                <button
-                    onClick={() => setIsEditing(true)}
-                    className="opacity-0 group-hover:opacity-100 transition-opacity p-2 hover:bg-white/5 rounded-full text-foreground group/btn"
-                    title="Edit Archive Details"
-                >
-                    <Settings2 className="w-5 h-5 opacity-40 group-hover/btn:opacity-100 transition-opacity" />
-                </button>
+
+                <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <ShareIcon url={`${typeof window !== 'undefined' ? window.location.origin : ''}/${username}/${archive.id}`} />
+                    <button
+                        onClick={() => setIsEditing(true)}
+                        className="p-2 hover:bg-white/5 rounded-full text-foreground group/btn transition-colors"
+                        title="Edit Archive Details"
+                    >
+                        <Settings2 className="w-5 h-5 opacity-40 group-hover/btn:opacity-100 transition-opacity" />
+                    </button>
+                </div>
             </div>
             {archive.description && (
                 <p className="text-lg text-foreground/60 max-w-2xl text-balance">{archive.description}</p>
