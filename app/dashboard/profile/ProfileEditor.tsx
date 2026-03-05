@@ -1,9 +1,11 @@
 "use client";
 
-import { useState, useRef } from "react";
-import { User, Camera, Loader2, UploadCloud, ArrowLeft } from "lucide-react";
+import { useState, useRef, useCallback } from "react";
+import { User, Camera, Loader2, UploadCloud, ArrowLeft, X } from "lucide-react";
 import { Button } from "@/components/Button";
 import Link from "next/link";
+import Cropper from "react-easy-crop";
+import { getCroppedImg } from "@/lib/cropImage";
 
 interface ProfileProps {
     user: {
@@ -20,6 +22,16 @@ export default function ProfileEditor({ user }: ProfileProps) {
     const [isUploading, setIsUploading] = useState(false);
     const [message, setMessage] = useState("");
     const fileInputRef = useRef<HTMLInputElement>(null);
+
+    // Cropping State
+    const [imageSrc, setImageSrc] = useState<string | null>(null);
+    const [crop, setCrop] = useState({ x: 0, y: 0 });
+    const [zoom, setZoom] = useState(1);
+    const [croppedAreaPixels, setCroppedAreaPixels] = useState<any>(null);
+
+    const onCropComplete = useCallback((_croppedArea: any, croppedAreaPixels: any) => {
+        setCroppedAreaPixels(croppedAreaPixels);
+    }, []);
 
     const handleSave = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -42,17 +54,32 @@ export default function ProfileEditor({ user }: ProfileProps) {
         }
     };
 
-    const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-        const file = e.target.files?.[0];
-        if (!file) return;
+    const onFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        if (e.target.files && e.target.files.length > 0) {
+            const file = e.target.files[0];
+            const reader = new FileReader();
+            reader.addEventListener("load", () => {
+                setImageSrc(reader.result?.toString() || null);
+            });
+            reader.readAsDataURL(file);
+        }
+    };
+
+    const handleAvatarUpload = async () => {
+        if (!imageSrc || !croppedAreaPixels) return;
 
         setIsUploading(true);
         setMessage("");
 
-        const formData = new FormData();
-        formData.append("file", file);
-
         try {
+            // Generate sliced Blob via Canvas
+            const croppedBlob = await getCroppedImg(imageSrc, croppedAreaPixels);
+            if (!croppedBlob) throw new Error("Could not extract crop");
+
+            // Build payload
+            const formData = new FormData();
+            formData.append("file", croppedBlob, "avatar.jpg");
+
             const res = await fetch("/api/user/avatar", {
                 method: "POST",
                 body: formData,
@@ -61,11 +88,13 @@ export default function ProfileEditor({ user }: ProfileProps) {
             if (!res.ok) throw new Error("Failed to upload avatar");
             const data = await res.json();
 
-            // The API returns the updated user with the new file URL
+            // Clear modal state and update avatar UI
+            setImageSrc(null);
             setAvatar(data.user.avatar);
             setMessage("Avatar updated successfully.");
         } catch (err: any) {
             setMessage(err.message || "Upload failed.");
+            setImageSrc(null);
         } finally {
             setIsUploading(false);
             if (fileInputRef.current) fileInputRef.current.value = "";
@@ -107,7 +136,7 @@ export default function ProfileEditor({ user }: ProfileProps) {
                         ref={fileInputRef}
                         className="hidden"
                         accept="image/*"
-                        onChange={handleAvatarUpload}
+                        onChange={onFileChange}
                     />
 
                     <div>
@@ -149,6 +178,60 @@ export default function ProfileEditor({ user }: ProfileProps) {
                     </div>
                 </form>
             </div>
+
+            {/* Cropper Modal Overlay */}
+            {imageSrc && (
+                <div className="fixed inset-0 z-[100] bg-background/95 backdrop-blur flex flex-col items-center justify-center p-4 sm:p-6 animate-in fade-in">
+                    <div className="w-full max-w-lg bg-card border border-border rounded-xl overflow-hidden shadow-2xl flex flex-col">
+                        <div className="flex items-center justify-between p-4 border-b border-border/50">
+                            <h3 className="font-bold tracking-tight">Align Avatar</h3>
+                            <button onClick={() => setImageSrc(null)} className="text-foreground/50 hover:text-foreground">
+                                <X className="w-5 h-5" />
+                            </button>
+                        </div>
+
+                        <div className="relative w-full h-[400px] bg-black">
+                            <Cropper
+                                image={imageSrc}
+                                crop={crop}
+                                zoom={zoom}
+                                aspect={1}
+                                cropShape="round"
+                                showGrid={false}
+                                onCropChange={setCrop}
+                                onCropComplete={onCropComplete}
+                                onZoomChange={setZoom}
+                            />
+                        </div>
+
+                        <div className="p-4 space-y-4 bg-card/50">
+                            <div>
+                                <label className="text-xs font-mono uppercase tracking-widest text-foreground/50 mb-2 block">Zoom</label>
+                                <input
+                                    type="range"
+                                    value={zoom}
+                                    min={1}
+                                    max={3}
+                                    step={0.1}
+                                    aria-labelledby="Zoom"
+                                    onChange={(e) => setZoom(Number(e.target.value))}
+                                    className="w-full accent-accent bg-border/50 h-1 rounded-lg appearance-none cursor-pointer"
+                                />
+                            </div>
+
+                            <div className="flex justify-end gap-3 pt-2">
+                                <Button variant="outline" onClick={() => setImageSrc(null)} disabled={isUploading}>
+                                    Cancel
+                                </Button>
+                                <Button variant="safelight" onClick={handleAvatarUpload} disabled={isUploading}>
+                                    {isUploading ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
+                                    {isUploading ? "Uploading..." : "Save Crop"}
+                                </Button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }
