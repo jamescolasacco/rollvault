@@ -11,7 +11,7 @@ export async function POST(req: Request) {
         }
 
         const reservedUsernames = [
-            "dashboard", "login", "register", "admin", "api", "auth",
+            "vault", "login", "register", "admin", "api", "auth",
             "root", "settings", "profile", "demo", "about", "contact",
             "privacy", "terms", "help", "support", "explore", "search"
         ];

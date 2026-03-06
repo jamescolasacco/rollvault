@@ -149,7 +149,7 @@ export default function RollEditorClient({ roll, archives }: RollClientProps) {
         try {
             const res = await fetch(`/api/rolls/${roll.id}`, { method: "DELETE" });
             if (res.ok) {
-                router.push("/dashboard");
+                router.push("/vault");
             }
         } catch (e) {
             console.error(e);
@@ -309,7 +309,7 @@ export default function RollEditorClient({ roll, archives }: RollClientProps) {
                 ) : (
                     <>
                         <div className="flex-1 pr-8 group">
-                            <Link href="/dashboard" className="text-foreground/50 hover:text-foreground inline-flex items-center gap-2 mb-6 transition-colors text-sm font-mono uppercase tracking-widest">
+                            <Link href="/vault" className="text-foreground/50 hover:text-foreground inline-flex items-center gap-2 mb-6 transition-colors text-sm font-mono uppercase tracking-widest">
                                 <ArrowLeft className="w-4 h-4 shrink-0" /> Back to Vault
                             </Link>
                             <div className="flex items-center gap-4 mb-4">

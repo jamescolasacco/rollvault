@@ -30,7 +30,7 @@ export default async function ArchiveDetailsPage({ params }: { params: Promise<{
 
     // @ts-ignore
     if (!archive || archive.userId !== session.user.id) {
-        redirect("/dashboard");
+        redirect("/vault");
     }
 
     return (
@@ -49,16 +49,16 @@ export default async function ArchiveDetailsPage({ params }: { params: Promise<{
                     <Aperture className="w-12 h-12 text-foreground opacity-20 mx-auto mb-4 animate-spin-slow" />
                     <p className="text-foreground opacity-40 font-mono text-sm uppercase tracking-widest mb-4">Archive is empty</p>
                     <p className="text-sm text-foreground/50 max-w-sm mx-auto mb-6">
-                        You can add rolls to this archive by editing them in your Vault Dashboard.
+                        You can add rolls to this archive by editing them in your Vault Vault.
                     </p>
-                    <Link href="/dashboard" className="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 border border-border bg-transparent hover:bg-accent hover:text-accent-foreground h-9 px-4 py-2">
+                    <Link href="/vault" className="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 border border-border bg-transparent hover:bg-accent hover:text-accent-foreground h-9 px-4 py-2">
                         Browse Rolls
                     </Link>
                 </div>
             ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                     {archive.rolls.map((roll: any) => (
-                        <Link key={roll.id} href={`/dashboard/rolls/${roll.id}`}>
+                        <Link key={roll.id} href={`/vault/rolls/${roll.id}`}>
                             <div className="group bg-card border border-border/50 p-4 shadow-md hover:border-accent/40 transition-colors flex flex-col items-center h-[280px] justify-between relative overflow-hidden">
                                 {/* Film border styling */}
                                 <div className="absolute top-0 left-0 w-full flex justify-between px-2 pt-1 opacity-20 pointer-events-none">

@@ -28,8 +28,8 @@ export default async function Home() {
         </Link>
         <nav className="flex items-center gap-4">
           {session ? (
-            <Link href="/dashboard">
-              <Button size="sm" variant="safelight">Dashboard</Button>
+            <Link href="/vault">
+              <Button size="sm" variant="safelight">Vault</Button>
             </Link>
           ) : (
             <>
@@ -66,7 +66,7 @@ export default async function Home() {
 
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4 w-full px-4 sm:px-0">
             {session ? (
-              <Link href="/dashboard" className="w-full sm:w-auto">
+              <Link href="/vault" className="w-full sm:w-auto">
                 <Button size="lg" variant="safelight" className="gap-2 w-full sm:w-auto">
                   Visit your vault
                   <Film className="w-4 h-4" />

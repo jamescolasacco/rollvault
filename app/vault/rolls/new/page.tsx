@@ -8,7 +8,7 @@ export default function NewRollPage() {
     return (
         <div className="max-w-xl mx-auto mt-8 space-y-8">
             <div>
-                <Link href="/dashboard" className="text-foreground/50 hover:text-foreground inline-flex items-center gap-2 mb-6 transition-colors text-sm font-mono uppercase tracking-widest">
+                <Link href="/vault" className="text-foreground/50 hover:text-foreground inline-flex items-center gap-2 mb-6 transition-colors text-sm font-mono uppercase tracking-widest">
                     <ArrowLeft className="w-4 h-4 shrink-0" /> Back to Vault
                 </Link>
                 <div className="flex items-center gap-3 mb-2">

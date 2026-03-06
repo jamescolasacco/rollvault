@@ -6,7 +6,7 @@ import { Button } from "@/components/Button";
 import { FolderHeart, Plus } from "lucide-react";
 import { CreateArchiveForm } from "./CreateArchiveForm";
 
-export default async function DashboardPage({
+export default async function VaultPage({
     searchParams
 }: {
     searchParams?: Promise<{ [key: string]: string | string[] | undefined }>
@@ -61,12 +61,12 @@ export default async function DashboardPage({
                     <Link href={`/u/${session?.user?.name}`} target="_blank" className="hidden sm:block">
                         <Button variant="outline">View Public Vault</Button>
                     </Link>
-                    <Link href="/dashboard/profile">
+                    <Link href="/vault/profile">
                         <Button variant="outline" className="gap-2">
                             Edit Profile
                         </Button>
                     </Link>
-                    <Link href="/dashboard/rolls/new">
+                    <Link href="/vault/rolls/new">
                         <Button variant="safelight" className="gap-2">
                             <Plus className="w-4 h-4" /> New Roll
                         </Button>
@@ -74,7 +74,7 @@ export default async function DashboardPage({
                 </div>
             </div>
 
-            {/* Dashboard Stats Panel */}
+            {/* Vault Stats Panel */}
             <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                 <div className="bg-card border border-border/50 rounded-xl p-6 shadow-sm group hover:border-accent/30 transition-colors">
                     <div className="text-3xl font-bold text-accent mb-1 group-hover:scale-110 transition-transform origin-left w-max">{totalRolls}</div>
@@ -99,14 +99,14 @@ export default async function DashboardPage({
                 {rolls.length === 0 ? (
                     <div className="border border-dashed border-border/50 rounded-xl p-16 text-center bg-card/10">
                         <p className="text-foreground/50 mb-4 font-mono text-sm uppercase tracking-widest">No rolls developed yet</p>
-                        <Link href="/dashboard/rolls/new">
+                        <Link href="/vault/rolls/new">
                             <Button variant="outline">Create your first roll</Button>
                         </Link>
                     </div>
                 ) : (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                         {displayRolls.map((roll: any, i: number) => (
-                            <Link key={roll.id} href={`/dashboard/rolls/${roll.id}`} className="block group animate-in fade-in slide-in-from-bottom-4 duration-700 fill-mode-both" style={{ animationDelay: `${i * 50}ms` }}>
+                            <Link key={roll.id} href={`/vault/rolls/${roll.id}`} className="block group animate-in fade-in slide-in-from-bottom-4 duration-700 fill-mode-both" style={{ animationDelay: `${i * 50}ms` }}>
                                 <div className="relative bg-card rounded-xl border border-border/50 p-4 shadow-sm hover:shadow-xl hover:border-white/20 transition-all flex items-center gap-5 overflow-hidden">
                                     <div className="absolute top-0 right-0 w-32 h-32 bg-accent/5 rounded-full blur-[40px] pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity" />
 
@@ -130,7 +130,7 @@ export default async function DashboardPage({
 
                 {rolls.length > 6 && !showAllRolls && (
                     <div className="mt-8 flex justify-center animate-in fade-in duration-700">
-                        <Link href={`/dashboard?showAllRolls=true${showAllArchives ? '&showAllArchives=true' : ''}`} scroll={false}>
+                        <Link href={`/vault?showAllRolls=true${showAllArchives ? '&showAllArchives=true' : ''}`} scroll={false}>
                             <Button variant="outline">Show all rolls ({rolls.length})</Button>
                         </Link>
                     </div>
@@ -155,7 +155,7 @@ export default async function DashboardPage({
                 ) : (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                         {displayArchives.map((archive: any, i: number) => (
-                            <Link key={archive.id} href={`/dashboard/archives/${archive.id}`} className="block group animate-in fade-in duration-700" style={{ animationDelay: `${i * 100}ms` }}>
+                            <Link key={archive.id} href={`/vault/archives/${archive.id}`} className="block group animate-in fade-in duration-700" style={{ animationDelay: `${i * 100}ms` }}>
                                 <div className="relative bg-card border border-border/50 p-6 shadow-md hover:border-accent/40 transition-colors flex flex-col justify-between rounded-xl overflow-hidden" style={{ minHeight: '160px' }}>
                                     <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-accent/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
                                     <div className="z-10">
@@ -176,7 +176,7 @@ export default async function DashboardPage({
 
                 {archives.length > 6 && !showAllArchives && (
                     <div className="mt-8 flex justify-center animate-in fade-in duration-700">
-                        <Link href={`/dashboard?showAllArchives=true${showAllRolls ? '&showAllRolls=true' : ''}`} scroll={false}>
+                        <Link href={`/vault?showAllArchives=true${showAllRolls ? '&showAllRolls=true' : ''}`} scroll={false}>
                             <Button variant="outline">Show all archives ({archives.length})</Button>
                         </Link>
                     </div>

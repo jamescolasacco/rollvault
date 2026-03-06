@@ -56,11 +56,11 @@ export default function DemoPage() {
                 <div className="max-w-2xl text-balance">
                     <h1 className="text-4xl sm:text-5xl font-bold tracking-tight mb-4">Experience the vault.</h1>
                     <p className="text-lg text-foreground/60">
-                        This is a simulated view of what your RollVault dashboard looks like once you begin uploading developed rolls and categorizing them into archives.
+                        This is a simulated view of what your RollVault vault looks like once you begin uploading developed rolls and categorizing them into archives.
                     </p>
                 </div>
 
-                {/* Dashboard Stats Panel */}
+                {/* Vault Stats Panel */}
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                     <div className="bg-card border border-border/50 rounded-xl p-6 shadow-sm group hover:border-accent/30 transition-colors">
                         <div className="text-3xl font-bold text-accent mb-1 group-hover:scale-110 transition-transform origin-left w-max">5</div>

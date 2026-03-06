@@ -27,7 +27,7 @@ export default async function RollPage({ params }: { params: Promise<{ id: strin
     });
 
     // @ts-ignore
-    if (!roll || roll.userId !== session.user.id) redirect("/dashboard");
+    if (!roll || roll.userId !== session.user.id) redirect("/vault");
 
     return <RollEditorClient roll={roll} archives={archives} />;
 }

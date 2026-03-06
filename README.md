@@ -9,7 +9,7 @@ RollVault is a beautiful, minimalist digital archive for analog photographers. I
 *   **Archives:** Organize your rolls into thematic collections (e.g., "Summer '23", "Portraits").
 *   **Drag & Drop Uploading:** Easily batch upload your high-res film scans into a roll.
 *   **Cover Customization:** Set custom cover images or let RollVault automatically select the first frame.
-*   **Live Dashboard metrics:** Keep track of your total frames, rolls, and archives.
+*   **Live Vault metrics:** Keep track of your total frames, rolls, and archives.
 
 ## 🛠 Tech Stack
 

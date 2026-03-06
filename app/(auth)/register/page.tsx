@@ -52,7 +52,7 @@ export default function RegisterPage() {
                 throw new Error("Login failed after registration");
             }
 
-            router.push("/dashboard");
+            router.push("/vault");
             router.refresh();
         } catch (err: any) {
             setError(err.message);

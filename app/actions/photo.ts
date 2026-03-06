@@ -49,5 +49,5 @@ export async function uploadPhoto(formData: FormData) {
 
     // (Legacy cover setting block removed in favor of dynamic fallback)
 
-    revalidatePath(`/dashboard/rolls/${rollId}`);
+    revalidatePath(`/vault/rolls/${rollId}`);
 }

@@ -18,7 +18,7 @@ export function DeleteArchiveButton({ id }: DeleteArchiveButtonProps) {
         setIsDeleting(true);
         try {
             await fetch(`/api/archives/${id}`, { method: "DELETE" });
-            router.push("/dashboard");
+            router.push("/vault");
             router.refresh();
         } catch (e) {
             console.error(e);

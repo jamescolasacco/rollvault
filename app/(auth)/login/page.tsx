@@ -31,7 +31,7 @@ export default function LoginPage() {
             setError("Invalid credentials");
             setLoading(false);
         } else {
-            router.push("/dashboard");
+            router.push("/vault");
             router.refresh();
         }
     };

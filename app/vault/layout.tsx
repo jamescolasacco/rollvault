@@ -5,7 +5,7 @@ import Link from "next/link";
 import { Film } from "lucide-react";
 import { LogoutButton } from "@/components/LogoutButton";
 
-export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
+export default async function VaultLayout({ children }: { children: React.ReactNode }) {
     const session = await getServerSession(authOptions);
     if (!session) {
         redirect("/login");
@@ -20,12 +20,12 @@ export default async function DashboardLayout({ children }: { children: React.Re
                         <span>RollVault</span>
                     </Link>
                     <div className="h-4 w-px bg-border/50 hidden sm:block" />
-                    <Link href="/dashboard" className="text-sm font-medium text-foreground/70 hover:text-foreground transition-colors hidden sm:block">
-                        Dashboard
+                    <Link href="/vault" className="text-sm font-medium text-foreground/70 hover:text-foreground transition-colors hidden sm:block">
+                        Vault
                     </Link>
                 </div>
                 <div className="flex items-center gap-6">
-                    <Link href="/dashboard/profile" className="text-sm text-foreground/60 hover:text-foreground font-mono uppercase tracking-wider transition-colors">
+                    <Link href="/vault/profile" className="text-sm text-foreground/60 hover:text-foreground font-mono uppercase tracking-wider transition-colors">
                         {session.user?.name}
                     </Link>
                     <LogoutButton />

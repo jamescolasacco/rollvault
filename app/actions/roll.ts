@@ -30,5 +30,5 @@ export async function createRoll(formData: FormData) {
         },
     });
 
-    redirect(`/dashboard/rolls/${roll.id}`);
+    redirect(`/vault/rolls/${roll.id}`);
 }
