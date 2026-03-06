@@ -54,12 +54,12 @@ export default async function Home() {
             Now in public beta
           </div>
 
-          <h1 className="text-5xl md:text-7xl font-bold tracking-tight text-balance">
+          <h1 className="text-4xl sm:text-5xl md:text-7xl font-bold tracking-tight px-2 sm:px-0 leading-[1.2]">
             Your film, <br />
-            <span className="text-foreground opacity-50 italic font-serif">beautifully displayed.</span>
+            <span className="text-foreground italic font-serif inline-block pr-6" style={{ filter: 'opacity(50%)' }}>beautifully displayed.</span>
           </h1>
 
-          <p className="text-lg md:text-xl text-foreground/60 max-w-xl mx-auto text-balance">
+          <p className="text-lg md:text-xl text-foreground/60 max-w-xl mx-auto text-balance px-2 sm:px-0">
             RollVault is the minimalist home for analog photographers.
             Host your developed rolls, organize them elegantly, and share your visual vault.
           </p>
@@ -89,44 +89,53 @@ export default async function Home() {
         </div>
 
         {/* Abstract Film Roll Visual */}
-        <div className="mt-24 w-full max-w-5xl translate-x-4 md:translate-x-12 opacity-80 opacity-transition hover:opacity-100 duration-1000 group">
-          <div className="flex gap-4 p-4 border-y-8 border-black bg-[#0a0a0a] shadow-2xl relative overflow-hidden mix-blend-screen">
+        <div className="mt-16 sm:mt-24 w-full max-w-5xl opacity-90 transition-opacity hover:opacity-100 duration-1000 group">
+          <div className="relative h-fit border-y-[4px] sm:border-y-8 border-black bg-[#0a0a0a] shadow-2xl overflow-hidden mix-blend-screen flex flex-col justify-center">
             {/* Sprocket holes top */}
-            <div className="absolute top-0 inset-x-0 h-4 flex justify-around items-center">
+            <div className="absolute top-0 inset-x-0 h-4 sm:h-8 flex justify-around items-center opacity-20 pointer-events-none z-0">
               {[...Array(30)].map((_, i) => (
-                <div key={`top-${i}`} className="w-3 h-2 bg-background rounded-[1px] opacity-20" />
+                <div key={`top-${i}`} className="w-1.5 sm:w-3 h-1 sm:h-2 bg-background rounded-[1px]" />
               ))}
             </div>
-            {[1, 2, 3, 4, 5].map((frame, index) => {
-              const fileExists = demoFiles[index];
-              return (
-                <div
-                  key={frame}
-                  className="w-64 h-40 bg-card rounded flex flex-col items-center justify-center border border-border/10 overflow-hidden relative shrink-0 group-hover:-translate-x-8 transition-transform duration-1000 ease-out"
-                >
-                  <div className="absolute inset-0 bg-gradient-to-tr from-black to-zinc-800 z-0" />
-                  {/* Fallback text if image hasn't been added yet */}
-                  {!fileExists && (
-                    <div className="relative z-10 flex flex-col items-center text-center opacity-30 mt-2">
-                      <span className="font-mono text-xs text-foreground">Frame {frame}</span>
-                    </div>
-                  )}
 
-                  {/* The actual image. We hide it on error if the user hasn't dropped the file into the demo folder yet. */}
-                  {fileExists && (
-                    <img
-                      src={`/demo/${frame}.jpg`}
-                      alt={`Demo Frame ${frame}`}
-                      className="absolute inset-0 w-full h-full object-cover z-20 opacity-90 mix-blend-screen"
-                    />
-                  )}
-                </div>
-              )
-            })}
+            {/* Scroll Viewport */}
+            <div className="w-full overflow-x-auto overflow-y-hidden snap-x snap-mandatory relative z-10 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
+              {/* Flex Track enforcing literal width */}
+              <div className="flex flex-nowrap w-max gap-3 sm:gap-6 px-4 sm:px-8 py-6 sm:py-12 items-center">
+                {[1, 2, 3, 4, 5].map((frame, index) => {
+                  const fileExists = demoFiles[index];
+                  return (
+                    <div
+                      key={frame}
+                      style={{ flex: "0 0 auto", minWidth: "12rem" }}
+                      className="w-48 sm:w-72 sm:min-w-[18rem] h-32 sm:h-48 bg-card rounded flex flex-col items-center justify-center border border-border/10 overflow-hidden relative snap-center shadow-xl"
+                    >
+                      <div className="absolute inset-0 bg-gradient-to-tr from-black to-zinc-800 z-0" />
+                      {/* Fallback text if image hasn't been added yet */}
+                      {!fileExists && (
+                        <div className="relative z-10 flex flex-col items-center text-center opacity-30 mt-2 pointer-events-none">
+                          <span className="font-mono text-xs text-foreground">Frame {frame}</span>
+                        </div>
+                      )}
+
+                      {/* The actual image */}
+                      {fileExists && (
+                        <img
+                          src={`/demo/${frame}.jpg`}
+                          alt={`Demo Frame ${frame}`}
+                          className="absolute inset-0 w-full h-full object-cover z-20 opacity-90 mix-blend-screen pointer-events-none"
+                        />
+                      )}
+                    </div>
+                  )
+                })}
+              </div>
+            </div>
+
             {/* Sprocket holes bottom */}
-            <div className="absolute bottom-0 inset-x-0 h-4 flex justify-around items-center">
+            <div className="absolute bottom-0 inset-x-0 h-4 sm:h-8 flex justify-around items-center opacity-20 pointer-events-none z-0">
               {[...Array(30)].map((_, i) => (
-                <div key={`bot-${i}`} className="w-3 h-2 bg-background rounded-[1px] opacity-20" />
+                <div key={`bot-${i}`} className="w-1.5 sm:w-3 h-1 sm:h-2 bg-background rounded-[1px]" />
               ))}
             </div>
           </div>
