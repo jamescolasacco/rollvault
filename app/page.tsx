@@ -121,7 +121,7 @@ export default async function Home() {
                       {/* The actual image */}
                       {fileExists && (
                         <img
-                          src={`/demo/${frame}.jpg`}
+                          src={`/demo/${frame}.webp`}
                           alt={`Demo Frame ${frame}`}
                           className="absolute inset-0 w-full h-full object-cover z-20 opacity-90 mix-blend-screen pointer-events-none"
                         />

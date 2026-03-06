@@ -5,13 +5,13 @@ import { Button } from "@/components/Button";
 export default function DemoPage() {
     // Simulated demo data to showcase the app without a backend request
     const mockRolls = [
-        { id: "1", title: "Summer in Kyoto", description: "Fuji Superia 400. Shot on Canon AE-1.", photosCount: 24, coverUrl: "/demo/1.jpg" },
-        { id: "2", title: "Pacific Coast", description: "Portra 400. Beaches and beyond.", photosCount: 16, coverUrl: "/demo/2.jpg" },
-        { id: "3", title: "Outer Landscapes", description: "Ilford HP5 Plus. Natural lighting tests.", photosCount: 36, coverUrl: "/demo/3.jpg" },
-        { id: "4", title: "London Streets", description: "Cinestill 800T through the streets.", photosCount: 12, coverUrl: "/demo/4.jpg" },
-        { id: "5", title: "Trip to Portugal", description: "Ektar 100. Beautiful landmarks.", photosCount: 36, coverUrl: "/demo/5.jpg" },
-        { id: "6", title: "Autumn Leaves", description: "ColorPlus 200. Park walk.", photosCount: 24, coverUrl: "/demo/1.jpg" },
-        { id: "7", title: "Cafe Hopping", description: "Gold 200. Coffee and friends.", photosCount: 36, coverUrl: "/demo/2.jpg" },
+        { id: "1", title: "Summer in Kyoto", description: "Fuji Superia 400. Shot on Canon AE-1.", photosCount: 24, coverUrl: "/demo/1.webp" },
+        { id: "2", title: "Pacific Coast", description: "Portra 400. Beaches and beyond.", photosCount: 16, coverUrl: "/demo/2.webp" },
+        { id: "3", title: "Outer Landscapes", description: "Ilford HP5 Plus. Natural lighting tests.", photosCount: 36, coverUrl: "/demo/3.webp" },
+        { id: "4", title: "London Streets", description: "Cinestill 800T through the streets.", photosCount: 12, coverUrl: "/demo/4.webp" },
+        { id: "5", title: "Trip to Portugal", description: "Ektar 100. Beautiful landmarks.", photosCount: 36, coverUrl: "/demo/5.webp" },
+        { id: "6", title: "Autumn Leaves", description: "ColorPlus 200. Park walk.", photosCount: 24, coverUrl: "/demo/1.webp" },
+        { id: "7", title: "Cafe Hopping", description: "Gold 200. Coffee and friends.", photosCount: 36, coverUrl: "/demo/2.webp" },
     ];
 
     const mockArchives = [

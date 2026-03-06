@@ -1,5 +1,5 @@
 import { PrismaClient } from '@prisma/client';
-import { readFile, unlink } from 'fs/promises';
+import { readFile, unlink, readdir } from 'fs/promises';
 import { join } from 'path';
 import sharp from 'sharp';
 
@@ -79,7 +79,69 @@ async function processLegacyImages() {
         }
     }
 
-    console.log(`\\nSweep complete. Compressed ${photoCount} photos and ${coverCount} covers.`);
+    // 3. Process Public Demo Assets
+    console.log("\\n--- Processing Static Demo Images ---");
+    const demoDir = join(publicDir, 'demo');
+    let demoCount = 0;
+    try {
+        const demoFiles = await readdir(demoDir);
+        for (const file of demoFiles) {
+            if (file.endsWith('.jpg') || file.endsWith('.png')) {
+                const oldPath = join(demoDir, file);
+                const newFilename = file.replace(/\\.[^/.]+$/, "") + ".webp";
+                const newPath = join(demoDir, newFilename);
+                console.log(`Compressing static demo file ${file} -> ${newFilename}`);
+
+                const buffer = await readFile(oldPath);
+                await sharp(buffer)
+                    .resize({ width: 2400, withoutEnlargement: true })
+                    .webp({ quality: 80, effort: 4 })
+                    .toFile(newPath);
+
+                await unlink(oldPath);
+                demoCount++;
+            }
+        }
+    } catch (e) {
+        console.log("No demo directory found or error reading.");
+    }
+
+    // 4. Process Legacy Database Avatars
+    console.log("\\n--- Processing Legacy Avatars ---");
+    const users = await prisma.user.findMany({
+        where: { avatar: { not: null } }
+    });
+    let avatarCount = 0;
+
+    for (const user of users) {
+        if (user.avatar && (user.avatar.startsWith('data:image/jpeg') || user.avatar.startsWith('data:image/png'))) {
+            try {
+                const base64Data = user.avatar.split(',')[1];
+                const buffer = Buffer.from(base64Data, 'base64');
+
+                if (buffer.length > 10 * 1024) {
+                    console.log(`Compressing avatar for @${user.username}...`);
+
+                    const optimizedBuffer = await sharp(buffer)
+                        .resize({ width: 400, height: 400, fit: "cover", withoutEnlargement: true })
+                        .webp({ quality: 80, effort: 4 })
+                        .toBuffer();
+
+                    const newBase64 = `data:image/webp;base64,${optimizedBuffer.toString('base64')}`;
+
+                    await prisma.user.update({
+                        where: { id: user.id },
+                        data: { avatar: newBase64 }
+                    });
+                    avatarCount++;
+                }
+            } catch (error) {
+                console.error(`Failed to process avatar for @${user.username}`, error);
+            }
+        }
+    }
+
+    console.log(`\\nSweep complete. Compressed ${photoCount} photos, ${coverCount} covers, ${demoCount} demo assets, and ${avatarCount} DB avatars.`);
 }
 
 processLegacyImages().catch(console.error).finally(() => prisma.$disconnect());
