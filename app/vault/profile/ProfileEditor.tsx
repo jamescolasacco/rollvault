@@ -106,7 +106,7 @@ export default function ProfileEditor({ user }: ProfileProps) {
     return (
         <div className="max-w-xl mx-auto space-y-8">
             <Link href="/vault" className="text-foreground/50 hover:text-foreground inline-flex items-center gap-2 mb-2 transition-colors text-sm font-mono uppercase tracking-widest">
-                <ArrowLeft className="w-4 h-4 shrink-0" /> Back to Vault
+                <ArrowLeft className="w-4 h-4 shrink-0" /> Back to Your Vault
             </Link>
             <div>
                 <h1 className="text-3xl font-bold tracking-tight mb-2">Profile</h1>

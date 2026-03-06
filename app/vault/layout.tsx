@@ -21,7 +21,7 @@ export default async function VaultLayout({ children }: { children: React.ReactN
                     </Link>
                     <div className="h-4 w-px bg-border/50 hidden sm:block" />
                     <Link href="/vault" className="text-sm font-medium text-foreground/70 hover:text-foreground transition-colors hidden sm:block">
-                        Vault
+                        Your Vault
                     </Link>
                 </div>
                 <div className="flex items-center gap-6">

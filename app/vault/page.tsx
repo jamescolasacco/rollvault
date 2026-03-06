@@ -59,7 +59,7 @@ export default async function VaultPage({
                 </div>
                 <div className="flex flex-wrap items-center gap-3">
                     <Link href={`/u/${session?.user?.name}`} target="_blank" className="hidden sm:block">
-                        <Button variant="outline">View Public Vault</Button>
+                        <Button variant="outline">View Public Profile</Button>
                     </Link>
                     <Link href="/vault/profile">
                         <Button variant="outline" className="gap-2">
