@@ -73,14 +73,6 @@ export async function POST(req: Request) {
             });
 
             createdPhotos.push(newPhoto);
-
-            // Set first photo as cover if necessary
-            if (!roll.coverImage && currentMaxOrder === 0) {
-                await prisma.roll.update({
-                    where: { id: rollId },
-                    data: { coverImage: url },
-                });
-            }
         }
 
         return NextResponse.json({ success: true, count: createdPhotos.length, photos: createdPhotos });
