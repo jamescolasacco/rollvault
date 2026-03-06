@@ -10,6 +10,16 @@ export async function POST(req: Request) {
             return NextResponse.json({ message: "Missing fields" }, { status: 400 });
         }
 
+        const reservedUsernames = [
+            "dashboard", "login", "register", "admin", "api", "auth",
+            "root", "settings", "profile", "demo", "about", "contact",
+            "privacy", "terms", "help", "support", "explore", "search"
+        ];
+
+        if (reservedUsernames.includes(username.toLowerCase())) {
+            return NextResponse.json({ message: "This username is reserved and cannot be used" }, { status: 400 });
+        }
+
         const existingUser = await prisma.user.findFirst({
             where: { OR: [{ email }, { username }] },
         });

@@ -5,7 +5,7 @@ import { ShareButton } from "@/components/ShareButton";
 
 const PublicRollCard = ({ roll, username, index }: { roll: any, username: string, index: number }) => (
     <div className="animate-in fade-in slide-in-from-bottom-8 duration-1000 fill-mode-both" style={{ animationDelay: `${index * 150}ms` }}>
-        <Link href={`/${username}/${roll.slug || roll.id}`} className="block group">
+        <Link href={`/u/${username}/${roll.slug || roll.id}`} className="block group">
             <div className="w-full relative flex items-center bg-[#110e0c] shadow-2xl overflow-hidden rounded-sm ring-1 ring-white/5 hover:scale-[1.01] transition-transform duration-300 p-4 sm:py-[30px] sm:px-[20px]">
                 {/* Top Edge */}
                 <div className="absolute top-0 left-0 right-0 h-[24px] w-full pointer-events-none">

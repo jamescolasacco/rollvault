@@ -58,7 +58,7 @@ export default async function DashboardPage({
                     <p className="text-foreground/60 mt-1">Manage your film rolls and public profile.</p>
                 </div>
                 <div className="flex flex-wrap items-center gap-3">
-                    <Link href={`/${session?.user?.name}`} target="_blank" className="hidden sm:block">
+                    <Link href={`/u/${session?.user?.name}`} target="_blank" className="hidden sm:block">
                         <Button variant="outline">View Public Vault</Button>
                     </Link>
                     <Link href="/dashboard/profile">

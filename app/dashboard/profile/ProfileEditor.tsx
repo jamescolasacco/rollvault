@@ -142,7 +142,7 @@ export default function ProfileEditor({ user }: ProfileProps) {
                     <div>
                         <h3 className="font-semibold text-lg">@{user.username}</h3>
                         <a
-                            href={`/${user.username}`}
+                            href={`/u/${user.username}`}
                             target="_blank"
                             rel="noreferrer"
                             className="text-sm font-mono text-accent hover:underline mt-1 inline-flex items-center gap-1"

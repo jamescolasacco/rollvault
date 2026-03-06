@@ -316,7 +316,7 @@ export default function RollEditorClient({ roll, archives }: RollClientProps) {
                                 <h1 className="text-4xl md:text-5xl font-bold tracking-tight">{metadata.title}</h1>
 
                                 <div className="flex items-center gap-1 sm:gap-2 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
-                                    <ShareIcon url={`${typeof window !== 'undefined' ? window.location.origin : ''}/${roll.user.username}/${roll.slug || roll.id}`} />
+                                    <ShareIcon url={`${typeof window !== 'undefined' ? window.location.origin : ''}/u/${roll.user.username}/${roll.slug || roll.id}`} />
                                     <button onClick={() => setIsEditing(true)} className="p-2 hover:bg-white/5 rounded-full text-foreground group/btn" title="Edit Roll Details">
                                         <Settings2 className="w-5 h-5 opacity-60 sm:opacity-40 group-hover/btn:opacity-100 transition-opacity" />
                                     </button>

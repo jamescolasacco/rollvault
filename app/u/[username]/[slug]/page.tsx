@@ -30,7 +30,7 @@ export default async function PublicRollView({ params }: { params: Promise<{ use
             {/* Header */}
             <header className="px-6 h-16 flex items-center justify-between border-b border-white/10 sticky top-0 bg-black/60 backdrop-blur-md z-40">
                 <div className="flex-1">
-                    <Link href={`/${username}`} className="text-white/50 hover:text-white inline-flex items-center gap-2 transition-colors text-sm font-mono uppercase tracking-widest">
+                    <Link href={`/u/${username}`} className="text-white/50 hover:text-white inline-flex items-center gap-2 transition-colors text-sm font-mono uppercase tracking-widest">
                         <ArrowLeft className="w-4 h-4 shrink-0" /> @{username}
                     </Link>
                 </div>
