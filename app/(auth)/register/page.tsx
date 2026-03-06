@@ -66,8 +66,7 @@ export default function RegisterPage() {
 
             <div className="absolute top-8 left-6 sm:left-8 z-50">
                 <Link href="/" className="inline-flex items-center gap-2 font-serif italic text-xl tracking-wide text-foreground/80 hover:text-foreground transition-colors">
-                    <Film className="w-5 h-5 text-accent" />
-                    RollVault
+                    <img src="/logo.png" alt="RollVault" className="h-6 sm:h-7 w-auto" />
                 </Link>
             </div>
 

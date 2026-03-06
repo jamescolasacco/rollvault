@@ -23,8 +23,7 @@ export default async function Home() {
     <div className="flex flex-col min-h-screen">
       <header className="px-6 h-16 flex items-center justify-between border-b border-border/50 sticky top-0 bg-background/80 backdrop-blur-md z-40">
         <Link href="/" className="flex items-center gap-2 font-serif italic text-xl tracking-wide text-foreground/80 hover:text-foreground transition-colors">
-          <Film className="w-5 h-5 text-accent" />
-          <span>RollVault</span>
+          <img src="/logo.png" alt="RollVault" className="h-6 sm:h-7 w-auto" />
         </Link>
         <nav className="flex items-center gap-4">
           {session ? (

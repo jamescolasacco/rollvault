@@ -40,8 +40,7 @@ export default async function PublicRollView({ params }: { params: Promise<{ use
                 <div className="flex-1 flex justify-end items-center gap-6">
                     <ShareButton title="Share" variant="ghost" className="text-white/50 hover:text-white" />
                     <Link href="/" className="inline-flex items-center gap-2 font-serif italic text-lg tracking-wide text-white/50 hover:text-white transition-colors">
-                        <Film className="w-4 h-4 text-accent" />
-                        RollVault
+                        <img src="/logo.png" alt="RollVault" className="h-5 sm:h-6 w-auto opacity-70 hover:opacity-100 transition-opacity" />
                     </Link>
                 </div>
             </header>

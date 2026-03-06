@@ -110,8 +110,7 @@ export default async function PublicProfile({ params }: { params: Promise<{ user
             {/* Home Navigation */}
             <div className="absolute top-6 sm:top-8 left-4 sm:left-8 z-50">
                 <Link href="/" className="inline-flex items-center gap-2 font-serif italic text-lg sm:text-xl tracking-wide text-foreground/80 hover:text-foreground transition-colors">
-                    <Film className="w-5 h-5 text-accent" />
-                    RollVault
+                    <img src="/logo.png" alt="RollVault" className="h-6 sm:h-7 w-auto" />
                 </Link>
             </div>
 
@@ -180,7 +179,6 @@ export default async function PublicProfile({ params }: { params: Promise<{ user
 
             <div className="pt-16 pb-8 text-center z-10 opacity-50 hover:opacity-100 transition-opacity">
                 <Link href="/" className="inline-flex items-center gap-2 text-sm font-serif italic tracking-wide text-foreground/50 hover:text-foreground transition-colors">
-                    <Film className="w-4 h-4 text-accent" />
                     Powered by RollVault
                 </Link>
             </div>
