@@ -29,7 +29,7 @@ export default async function Home() {
         <nav className="flex items-center gap-4">
           {session ? (
             <Link href="/vault">
-              <Button size="sm" variant="safelight">Vault</Button>
+              <Button size="sm" variant="safelight">Your Vault</Button>
             </Link>
           ) : (
             <>
