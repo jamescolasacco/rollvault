@@ -14,6 +14,7 @@ model User {
   username  String   @unique
   bio       String?
   avatar    String?
+  tier      String   @default("FREE")
   rolls     Roll[]
   archives  Archive[]
   createdAt DateTime @default(now())

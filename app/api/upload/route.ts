@@ -23,11 +23,33 @@ export async function POST(req: Request) {
             return NextResponse.json({ error: "Missing rollId or files" }, { status: 400 });
         }
 
-        // Verify roll belongs to user
+        // Verify roll belongs to user and get their tier
         const roll = await prisma.roll.findUnique({
             where: { id: rollId },
-            include: { photos: { orderBy: { orderIndex: 'desc' }, take: 1 } }
+            include: {
+                photos: { orderBy: { orderIndex: 'desc' }, take: 1 },
+                user: { select: { tier: true, id: true } }
+            }
         });
+
+        // @ts-ignore
+        if (!roll || roll.userId !== session.user.id) {
+            return NextResponse.json({ error: "Unauthorized roll access" }, { status: 403 });
+        }
+
+        // Enforce Free Tier Photo Limits
+        if (roll.user.tier === "FREE") {
+            const totalPhotos = await prisma.photo.count({
+                where: { roll: { userId: roll.user.id } }
+            });
+
+            if (totalPhotos + files.length > 1000) {
+                return NextResponse.json(
+                    { error: `Free tier limit reached (1000 photos maximum). You currently have ${totalPhotos} photos. Please delete some or upgrade to Pro.` },
+                    { status: 403 }
+                );
+            }
+        }
 
         // @ts-ignore
         if (!roll || roll.userId !== session.user.id) {

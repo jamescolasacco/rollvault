@@ -12,6 +12,8 @@ interface ProfileProps {
         username: string;
         bio: string | null;
         avatar: string | null;
+        tier: string;
+        photoCount: number;
     };
 }
 
@@ -177,6 +179,56 @@ export default function ProfileEditor({ user }: ProfileProps) {
                         )}
                     </div>
                 </form>
+            </div>
+
+            {/* Subscription & Limits Card */}
+            <div className="bg-card/20 border border-border rounded-xl p-8 shadow-xl">
+                <div className="flex items-start justify-between mb-6">
+                    <div>
+                        <h2 className="text-xl font-bold tracking-tight flex items-center gap-2">
+                            Vault Capacity
+                            <span className={`text-xs px-2 py-0.5 rounded-full font-mono font-medium ${user.tier === "FREE" ? "bg-accent/20 text-accent" :
+                                user.tier === "ADMIN" ? "bg-purple-500/20 text-purple-400" :
+                                    "bg-amber-500/20 text-amber-400"
+                                }`}>
+                                {user.tier} PLAN
+                            </span>
+                        </h2>
+                        <p className="text-sm text-foreground/60 mt-1">
+                            {user.tier === "FREE" ? "You are currently on the free tier." : "You have unlimited storage capacity."}
+                        </p>
+                    </div>
+                    {user.tier === "FREE" && (
+                        <Button variant="safelight" className="text-xs h-8 px-3">
+                            Upgrade to Pro
+                        </Button>
+                    )}
+                </div>
+
+                <div className="space-y-2">
+                    <div className="flex justify-between text-sm">
+                        <span className="text-foreground/80 font-medium">Storage Used</span>
+                        <span className="font-mono">
+                            {user.photoCount} / {user.tier === "FREE" ? "1,000" : "∞"} photos
+                        </span>
+                    </div>
+                    <div className="h-2 w-full bg-black rounded-full overflow-hidden border border-white/5 relative">
+                        {user.tier === "FREE" ? (
+                            <div
+                                className={`h-full transition-all duration-1000 ${(user.photoCount / 1000) > 0.9 ? "bg-red-500" : "bg-accent"
+                                    }`}
+                                style={{ width: `${Math.min((user.photoCount / 1000) * 100, 100)}%` }}
+                            />
+                        ) : (
+                            <div className="absolute inset-0 bg-gradient-to-r from-amber-500/20 via-amber-400/40 to-amber-500/20 animate-pulse" />
+                        )}
+                    </div>
+                    {user.tier === "FREE" && user.photoCount >= 1000 && (
+                        <p className="text-xs text-red-400 mt-2">
+                            You have reached your storage limit. Please upgrade to Pro to upload more photos.
+                        </p>
+                    )}
+                </div>
             </div>
 
             {/* Cropper Modal Overlay */}

@@ -13,14 +13,19 @@ export default async function ProfilePage() {
     const user = await prisma.user.findUnique({
         // @ts-ignore
         where: { id: session.user.id },
-        select: { username: true, bio: true, avatar: true }
+        select: { username: true, bio: true, avatar: true, tier: true }
     });
 
     if (!user) redirect("/login");
 
+    const photoCount = await prisma.photo.count({
+        // @ts-ignore
+        where: { roll: { userId: session.user.id } }
+    });
+
     return (
         <div className="py-8">
-            <ProfileEditor user={user} />
+            <ProfileEditor user={{ ...user, photoCount }} />
         </div>
     );
 }
