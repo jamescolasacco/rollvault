@@ -2,9 +2,10 @@ import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { writeFile, mkdir } from "fs/promises";
+import { mkdir } from "fs/promises";
 import { join } from "path";
 import { v4 as uuidv4 } from "uuid";
+import sharp from "sharp";
 
 export async function POST(req: Request) {
     try {
@@ -44,11 +45,21 @@ export async function POST(req: Request) {
             const bytes = await file.arrayBuffer();
             const buffer = Buffer.from(bytes);
 
-            const ext = file.name.split('.').pop() || "jpg";
-            const filename = `${uuidv4()}.${ext}`;
+            // Enforce webp conversion sequence
+            const filename = `${uuidv4()}.webp`;
             const filepath = join(uploadDir, filename);
 
-            await writeFile(filepath, buffer);
+            // Execute high-performance image compression pipeline
+            await sharp(buffer)
+                .resize({
+                    width: 2400,
+                    height: 2400,
+                    fit: "inside",
+                    withoutEnlargement: true
+                })
+                .webp({ quality: 80, effort: 4 })
+                .toFile(filepath);
+
             const url = `/uploads/${filename}`;
 
             currentMaxOrder += 1;
