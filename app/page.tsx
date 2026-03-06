@@ -12,7 +12,7 @@ export default async function Home() {
   // Check which demo files exist to prevent next.js SSR errors
   const demoFiles = await Promise.all([1, 2, 3, 4, 5].map(async (frame) => {
     try {
-      await stat(join(process.cwd(), "public", "demo", `${frame}.jpg`));
+      await stat(join(process.cwd(), "public", "demo", `${frame}.webp`));
       return true;
     } catch {
       return false;
