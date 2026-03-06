@@ -59,8 +59,9 @@ export default async function Home() {
           </h1>
 
           <p className="text-lg md:text-xl text-foreground/60 max-w-xl mx-auto text-balance px-2 sm:px-0">
-            RollVault is the minimalist home for analog photographers.
-            Host your developed rolls, organize them elegantly, and share your visual vault.
+            RollVault is the home for your analog photography.
+            <br />
+            Upload your developed rolls, organize them, and share your visual vault.
           </p>
 
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4 w-full px-4 sm:px-0">
