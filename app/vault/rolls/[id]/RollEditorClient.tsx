@@ -31,7 +31,6 @@ export default function RollEditorClient({ roll, archives }: RollClientProps) {
     const [editIsPinned, setEditIsPinned] = useState(roll.pinOrder !== null);
     const [isCoverUploading, setIsCoverUploading] = useState(false);
     const [isPinning, setIsPinning] = useState(false);
-    const [pinningError, setPinningError] = useState("");
     const coverInputRef = useRef<HTMLInputElement>(null);
 
     // Current displayed metadata
@@ -87,25 +86,29 @@ export default function RollEditorClient({ roll, archives }: RollClientProps) {
         }
     };
 
-    const handleTogglePin = async (e: React.ChangeEvent<HTMLInputElement>) => {
-        const checked = e.target.checked;
+    const handleTogglePin = async () => {
+        if (!metadata.showOnProfile) {
+            alert("This roll must be set to 'Show on Public Profile' before it can be pinned.");
+            return;
+        }
+
+        const newPinnedState = !editIsPinned;
         setIsPinning(true);
-        setPinningError("");
         try {
             const res = await fetch(`/api/rolls/${roll.id}/pin`, {
                 method: "PATCH",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ isPinned: checked })
+                body: JSON.stringify({ isPinned: newPinnedState })
             });
             if (res.ok) {
-                setEditIsPinned(checked);
+                setEditIsPinned(newPinnedState);
             } else {
                 const text = await res.text();
-                setPinningError(text || "Failed to update pin state.");
+                alert(text || "Failed to update pin state.");
             }
         } catch (error) {
             console.error(error);
-            setPinningError("An error occurred.");
+            alert("An error occurred saving pin state.");
         } finally {
             setIsPinning(false);
         }
@@ -316,26 +319,6 @@ export default function RollEditorClient({ roll, archives }: RollClientProps) {
                                 </div>
                             </label>
 
-                            <label className={`flex items-center gap-3 p-2 -ml-2 rounded transition-colors w-fit mt-2 ${!derivedShowOnProfile || isPinning ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer group hover:bg-white/5'}`}>
-                                <input
-                                    type="checkbox"
-                                    checked={editIsPinned}
-                                    onChange={handleTogglePin}
-                                    disabled={!derivedShowOnProfile || isPinning}
-                                    className="w-4 h-4 rounded border-foreground/20 text-yellow-500 focus:ring-yellow-500 bg-transparent disabled:opacity-50"
-                                />
-                                <div className="flex flex-col">
-                                    <span className={`text-sm font-medium ${!derivedShowOnProfile ? 'text-foreground/90' : 'text-foreground/90 group-hover:text-foreground'}`}>
-                                        Pin to Public Profile {isPinning && <Loader2 className="w-3 h-3 animate-spin inline ml-2" />}
-                                    </span>
-                                    <span className="text-xs text-foreground/50">
-                                        Pinned rolls bypass the standard grid and display elegantly at the absolute top of your page. (Max 3)
-                                    </span>
-                                    {pinningError && (
-                                        <span className="text-xs text-red-500 mt-1">{pinningError}</span>
-                                    )}
-                                </div>
-                            </label>
                         </div>
                         <div className="flex items-center justify-between pt-4 border-t border-border/50">
                             <div className="flex items-center gap-3">
@@ -363,11 +346,17 @@ export default function RollEditorClient({ roll, archives }: RollClientProps) {
                             <div className="flex items-center gap-4 mb-4">
                                 <h1 className="text-4xl md:text-5xl font-bold tracking-tight flex items-center gap-3">
                                     {metadata.title}
-                                    {editIsPinned && (
-                                        <span title="Pinned to Public Profile" className="flex items-center justify-center bg-yellow-500/10 text-yellow-500 rounded-full p-2.5">
-                                            <Pin className="w-5 h-5 md:w-6 md:h-6 fill-yellow-500/20" />
-                                        </span>
-                                    )}
+                                    <button
+                                        onClick={handleTogglePin}
+                                        disabled={isPinning}
+                                        title={editIsPinned ? "Unpin from Public Profile" : "Pin to Public Profile"}
+                                        className={`flex items-center justify-center rounded-full p-2.5 transition-colors ${editIsPinned
+                                                ? 'bg-yellow-500/10 text-yellow-500 hover:bg-yellow-500/20'
+                                                : 'bg-white/5 text-foreground/40 hover:bg-white/10 hover:text-foreground/80'
+                                            } ${isPinning ? 'opacity-50 cursor-not-allowed' : ''}`}
+                                    >
+                                        {isPinning ? <Loader2 className="w-5 h-5 md:w-6 md:h-6 animate-spin" /> : <Pin className={`w-5 h-5 md:w-6 md:h-6 ${editIsPinned ? 'fill-yellow-500/20' : ''}`} />}
+                                    </button>
                                 </h1>
 
                                 <div className="flex items-center gap-1 sm:gap-2 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">

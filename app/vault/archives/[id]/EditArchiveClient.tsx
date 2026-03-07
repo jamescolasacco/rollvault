@@ -7,6 +7,7 @@ import Link from "next/link";
 import { Button } from "@/components/Button";
 import { Input } from "@/components/Input";
 import { ShareIcon } from "@/components/ShareIcon";
+import { DeleteArchiveButton } from "@/components/DeleteArchiveButton";
 
 interface EditArchiveClientProps {
     archive: {
@@ -81,18 +82,21 @@ export function EditArchiveClient({ archive, username }: EditArchiveClientProps)
                             <span className="text-xs text-foreground/50">If unchecked, this archive is unlisted but accessible via direct link.</span>
                         </div>
                     </label>
-                    <div className="flex gap-2 pt-2">
-                        <Button onClick={handleSave} disabled={saving} variant="safelight" size="sm">
-                            {saving ? "Saving..." : "Save Changes"}
-                        </Button>
-                        <Button onClick={() => {
-                            setTitle(archive.title);
-                            setDescription(archive.description || "");
-                            setShowOnProfile((archive as any).showOnProfile ?? true);
-                            setIsEditing(false);
-                        }} disabled={saving} variant="outline" size="sm">
-                            Cancel
-                        </Button>
+                    <div className="flex items-center justify-between pt-4 mt-2 border-t border-border/50">
+                        <div className="flex gap-2">
+                            <Button onClick={handleSave} disabled={saving} variant="safelight" size="sm">
+                                {saving ? "Saving..." : "Save Changes"}
+                            </Button>
+                            <Button onClick={() => {
+                                setTitle(archive.title);
+                                setDescription(archive.description || "");
+                                setShowOnProfile((archive as any).showOnProfile ?? true);
+                                setIsEditing(false);
+                            }} disabled={saving} variant="outline" size="sm">
+                                Cancel
+                            </Button>
+                        </div>
+                        <DeleteArchiveButton id={archive.id} />
                     </div>
                 </div>
             </div>

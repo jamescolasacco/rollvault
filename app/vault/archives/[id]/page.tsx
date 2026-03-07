@@ -5,7 +5,6 @@ import Link from "next/link";
 import { Aperture } from "lucide-react";
 import { redirect } from "next/navigation";
 import { Button } from "@/components/Button";
-import { DeleteArchiveButton } from "@/components/DeleteArchiveButton";
 import { EditArchiveClient } from "./EditArchiveClient";
 
 export default async function ArchiveDetailsPage({ params }: { params: Promise<{ id: string }> }) {
@@ -37,11 +36,6 @@ export default async function ArchiveDetailsPage({ params }: { params: Promise<{
         <div className="space-y-8 animate-in fade-in duration-700">
             <div className="flex items-start justify-between border-b border-border/50 pb-6 relative">
                 <EditArchiveClient archive={archive} username={archive.user.username} />
-
-                <div className="hidden sm:flex flex-col items-end text-right shrink-0">
-                    <span className="text-xs font-mono uppercase tracking-widest text-foreground/40 mb-1">Actions</span>
-                    <DeleteArchiveButton id={archive.id} />
-                </div>
             </div>
 
             {archive.rolls.length === 0 ? (
