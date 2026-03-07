@@ -14,7 +14,7 @@ export default async function AllRollsPage() {
 
     const rolls: any = await prisma.roll.findMany({
         where: { userId },
-        orderBy: { createdAt: "desc" },
+        orderBy: { updatedAt: "desc" },
         include: {
             _count: { select: { photos: true } },
             photos: { take: 1, orderBy: { orderIndex: "asc" } }

@@ -15,7 +15,7 @@ export default async function VaultPage() {
     // Fetch User Rolls & associated stats
     const rolls: any = await prisma.roll.findMany({
         where: { userId },
-        orderBy: { createdAt: "desc" },
+        orderBy: { updatedAt: "desc" },
         include: {
             _count: { select: { photos: true } },
             photos: { take: 1, orderBy: { orderIndex: "asc" } }
@@ -30,7 +30,7 @@ export default async function VaultPage() {
                 include: { _count: { select: { photos: true } } }
             }
         },
-        orderBy: { createdAt: "desc" }
+        orderBy: { updatedAt: "desc" }
     });
 
     // Calculate Live Stats

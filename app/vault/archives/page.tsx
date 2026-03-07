@@ -19,7 +19,7 @@ export default async function AllArchivesPage() {
                 include: { _count: { select: { photos: true } } }
             }
         },
-        orderBy: { createdAt: "desc" }
+        orderBy: { updatedAt: "desc" }
     });
 
     return (
