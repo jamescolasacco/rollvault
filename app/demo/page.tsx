@@ -63,15 +63,15 @@ export default function DemoPage() {
                 {/* Vault Stats Panel */}
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                     <div className="bg-card border border-border/50 rounded-xl p-6 shadow-sm group hover:border-accent/30 transition-colors">
-                        <div className="text-3xl font-bold text-accent mb-1 group-hover:scale-110 transition-transform origin-left w-max">5</div>
+                        <div className="text-3xl font-bold text-accent mb-1 group-hover:scale-110 transition-transform origin-left w-max">7</div>
                         <div className="text-xs font-mono uppercase tracking-widest text-foreground/50">Total Rolls</div>
                     </div>
                     <div className="bg-card border border-border/50 rounded-xl p-6 shadow-sm group hover:border-white/30 transition-colors">
-                        <div className="text-3xl font-bold mb-1 group-hover:scale-110 transition-transform origin-left w-max">124</div>
+                        <div className="text-3xl font-bold mb-1 group-hover:scale-110 transition-transform origin-left w-max">143</div>
                         <div className="text-xs font-mono uppercase tracking-widest text-foreground/50">Total Frames</div>
                     </div>
                     <div className="bg-card border border-border/50 rounded-xl p-6 shadow-sm group hover:border-white/30 transition-colors">
-                        <div className="text-3xl font-bold mb-1 group-hover:scale-110 transition-transform origin-left w-max">2</div>
+                        <div className="text-3xl font-bold mb-1 group-hover:scale-110 transition-transform origin-left w-max">7</div>
                         <div className="text-xs font-mono uppercase tracking-widest text-foreground/50">Archives</div>
                     </div>
                 </div>
