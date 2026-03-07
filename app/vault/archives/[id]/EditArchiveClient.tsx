@@ -115,7 +115,6 @@ export function EditArchiveClient({ archive, username }: EditArchiveClientProps)
                 </div>
 
                 <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                    <ShareIcon url={`${typeof window !== 'undefined' ? window.location.origin : ''}/u/${username}/${archive.id}`} />
                     <button
                         onClick={() => setIsEditing(true)}
                         className="p-2 hover:bg-white/5 rounded-full text-foreground group/btn transition-colors"
@@ -123,6 +122,7 @@ export function EditArchiveClient({ archive, username }: EditArchiveClientProps)
                     >
                         <Settings2 className="w-5 h-5 opacity-40 group-hover/btn:opacity-100 transition-opacity" />
                     </button>
+                    <ShareIcon url={`${typeof window !== 'undefined' ? window.location.origin : ''}/u/${username}/${archive.id}`} />
                 </div>
             </div>
             {archive.description && (

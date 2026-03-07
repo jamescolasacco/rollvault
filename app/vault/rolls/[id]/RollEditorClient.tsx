@@ -3,11 +3,12 @@
 import { useState, useRef } from "react";
 import UploadDropzone from "@/components/UploadDropzone";
 import { PhotoGrid } from "@/components/PhotoGrid";
-import { ArrowLeft, Settings2, Loader2, UploadCloud, Camera, Pin } from "lucide-react";
+import { ArrowLeft, Settings2, Loader2, UploadCloud, Camera, Pin, FolderHeart } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/Button";
 import { Input } from "@/components/Input";
 import { ShareIcon } from "@/components/ShareIcon";
+import { ArchiveSelectionModal } from "./ArchiveSelectionModal";
 import { useRouter } from "next/navigation";
 
 interface RollClientProps {
@@ -31,6 +32,7 @@ export default function RollEditorClient({ roll, archives }: RollClientProps) {
     const [editIsPinned, setEditIsPinned] = useState(roll.pinOrder !== null);
     const [isCoverUploading, setIsCoverUploading] = useState(false);
     const [isPinning, setIsPinning] = useState(false);
+    const [isArchiveModalOpen, setIsArchiveModalOpen] = useState(false);
     const coverInputRef = useRef<HTMLInputElement>(null);
 
     // Current displayed metadata
@@ -276,25 +278,29 @@ export default function RollEditorClient({ roll, archives }: RollClientProps) {
                             <label className="text-xs font-mono uppercase text-foreground/60">Date Developed</label>
                             <Input type="date" value={editDate} onChange={e => setEditDate(e.target.value)} />
                         </div>
-                        <div className="space-y-3">
-                            <label className="text-xs font-mono uppercase text-foreground/60">Vault Archives</label>
+                        <div className="space-y-4">
+                            <div className="flex items-center justify-between">
+                                <label className="text-xs font-mono uppercase text-foreground/60">Vault Archives</label>
+                                {archives.length > 0 && (
+                                    <button
+                                        onClick={() => setIsArchiveModalOpen(true)}
+                                        className="text-xs font-mono text-accent hover:text-accent/80 transition-colors uppercase tracking-widest bg-accent/10 px-2 py-1 rounded"
+                                    >
+                                        Manage
+                                    </button>
+                                )}
+                            </div>
                             {archives.length === 0 ? (
                                 <p className="text-sm text-foreground/40 italic">No archives created yet.</p>
+                            ) : editArchiveIds.length === 0 ? (
+                                <p className="text-sm text-foreground/60 border border-dashed border-border/50 rounded-md p-3 text-center">Not added to any archives.</p>
                             ) : (
-                                <div className="space-y-2 border border-border/50 rounded-md p-3 bg-background max-h-48 overflow-y-auto">
-                                    {archives.map((archive) => (
-                                        <label key={archive.id} className="flex items-center gap-3 cursor-pointer group hover:bg-white/5 p-1 rounded transition-colors">
-                                            <input
-                                                type="checkbox"
-                                                checked={editArchiveIds.includes(archive.id)}
-                                                onChange={(e) => {
-                                                    if (e.target.checked) setEditArchiveIds(prev => [...prev, archive.id]);
-                                                    else setEditArchiveIds(prev => prev.filter(id => id !== archive.id));
-                                                }}
-                                                className="w-4 h-4 rounded border-foreground/20 text-accent focus:ring-accent bg-transparent"
-                                            />
-                                            <span className="text-sm text-foreground/80 group-hover:text-foreground">{archive.title}</span>
-                                        </label>
+                                <div className="flex flex-wrap gap-2">
+                                    {archives.filter((a: any) => editArchiveIds.includes(a.id)).map((archive: any) => (
+                                        <div key={archive.id} className="flex items-center gap-2 bg-white/5 border border-border/50 rounded-md px-3 py-1.5 cursor-default hover:bg-white/10 transition-colors">
+                                            <FolderHeart className="w-3.5 h-3.5 text-accent/60" />
+                                            <span className="text-xs text-foreground/80">{archive.title}</span>
+                                        </div>
                                     ))}
                                 </div>
                             )}
@@ -360,10 +366,10 @@ export default function RollEditorClient({ roll, archives }: RollClientProps) {
                                 </h1>
 
                                 <div className="flex items-center gap-1 sm:gap-2 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
-                                    <ShareIcon url={`${typeof window !== 'undefined' ? window.location.origin : ''}/u/${roll.user.username}/${roll.slug || roll.id}`} />
                                     <button onClick={() => setIsEditing(true)} className="p-2 hover:bg-white/5 rounded-full text-foreground group/btn" title="Edit Roll Details">
                                         <Settings2 className="w-5 h-5 opacity-60 sm:opacity-40 group-hover/btn:opacity-100 transition-opacity" />
                                     </button>
+                                    <ShareIcon url={`${typeof window !== 'undefined' ? window.location.origin : ''}/u/${roll.user.username}/${roll.slug || roll.id}`} />
                                 </div>
                             </div>
                             {metadata.description && (
@@ -412,6 +418,18 @@ export default function RollEditorClient({ roll, archives }: RollClientProps) {
                     />
                 </div>
             </div>
+
+            {isArchiveModalOpen && (
+                <ArchiveSelectionModal
+                    archives={archives}
+                    initialSelectedIds={editArchiveIds}
+                    onSave={(ids) => {
+                        setEditArchiveIds(ids);
+                        setIsArchiveModalOpen(false);
+                    }}
+                    onClose={() => setIsArchiveModalOpen(false)}
+                />
+            )}
         </div>
     );
 }
