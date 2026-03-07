@@ -66,6 +66,46 @@ const PublicRollCard = ({ roll, username, index }: { roll: any, username: string
     </div>
 );
 
+import type { Metadata } from "next";
+
+export async function generateMetadata({ params }: { params: Promise<{ username: string }> }): Promise<Metadata> {
+    const { username } = await params;
+
+    const user: any = await prisma.user.findUnique({
+        where: { username },
+    });
+
+    if (!user) {
+        return {
+            title: "User Not Found | RollVault",
+        };
+    }
+
+    const title = `@${user.username} | RollVault`;
+    const description = user.bio || `View ${user.username}'s film photography vault.`;
+
+    return {
+        title,
+        description,
+        openGraph: {
+            title,
+            description,
+            ...(user.avatar && {
+                images: [{ url: user.avatar }],
+            }),
+            type: "profile",
+        },
+        twitter: {
+            card: "summary_large_image",
+            title,
+            description,
+            ...(user.avatar && {
+                images: [user.avatar],
+            }),
+        },
+    };
+}
+
 export default async function PublicProfile({ params }: { params: Promise<{ username: string }> }) {
     const { username } = await params;
 

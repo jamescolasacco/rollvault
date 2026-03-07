@@ -4,6 +4,56 @@ import { ArrowLeft, Film } from "lucide-react";
 import { FilmStripContainer } from "@/components/FilmStripContainer";
 import { ShareButton } from "@/components/ShareButton";
 
+import type { Metadata } from "next";
+
+export async function generateMetadata({ params }: { params: Promise<{ username: string, slug: string }> }): Promise<Metadata> {
+    const { username, slug } = await params;
+
+    const roll: any = await prisma.roll.findFirst({
+        where: {
+            // @ts-ignore
+            OR: [
+                { slug: slug },
+                { id: slug }
+            ]
+        },
+        include: {
+            user: true,
+            photos: { take: 1, orderBy: { orderIndex: "asc" } }
+        }
+    });
+
+    if (!roll || roll.user.username !== username) {
+        return {
+            title: "Roll Not Found | RollVault",
+        };
+    }
+
+    const title = `${roll.title} | ${username}`;
+    const description = roll.description || `View ${roll.title} by @${username} on RollVault.`;
+    const image = roll.coverImage || roll.photos?.[0]?.url;
+
+    return {
+        title,
+        description,
+        openGraph: {
+            title,
+            description,
+            ...(image && {
+                images: [{ url: image }],
+            }),
+        },
+        twitter: {
+            card: "summary_large_image",
+            title,
+            description,
+            ...(image && {
+                images: [image],
+            }),
+        },
+    };
+}
+
 export default async function PublicRollView({ params }: { params: Promise<{ username: string, slug: string }> }) {
     const { username, slug } = await params;
 
