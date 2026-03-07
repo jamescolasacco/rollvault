@@ -28,6 +28,7 @@ model Roll {
   description   String?
   coverImage    String?
   showOnProfile Boolean  @default(true)
+  pinOrder      Int?
   userId        String
   user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   photos        Photo[]

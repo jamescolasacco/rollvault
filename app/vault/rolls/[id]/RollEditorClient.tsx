@@ -3,7 +3,7 @@
 import { useState, useRef } from "react";
 import UploadDropzone from "@/components/UploadDropzone";
 import { PhotoGrid } from "@/components/PhotoGrid";
-import { ArrowLeft, Settings2, Loader2, UploadCloud, Camera } from "lucide-react";
+import { ArrowLeft, Settings2, Loader2, UploadCloud, Camera, Pin } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/Button";
 import { Input } from "@/components/Input";
@@ -28,7 +28,10 @@ export default function RollEditorClient({ roll, archives }: RollClientProps) {
     const [editArchiveIds, setEditArchiveIds] = useState<string[]>(roll.archives.map((a: any) => a.id));
     const [editCoverImage, setEditCoverImage] = useState(roll.coverImage || "");
     const [editShowOnProfile, setEditShowOnProfile] = useState(roll.showOnProfile ?? true);
+    const [editIsPinned, setEditIsPinned] = useState(roll.pinOrder !== null);
     const [isCoverUploading, setIsCoverUploading] = useState(false);
+    const [isPinning, setIsPinning] = useState(false);
+    const [pinningError, setPinningError] = useState("");
     const coverInputRef = useRef<HTMLInputElement>(null);
 
     // Current displayed metadata
@@ -81,6 +84,30 @@ export default function RollEditorClient({ roll, archives }: RollClientProps) {
             console.error(error);
         } finally {
             setIsSaving(false);
+        }
+    };
+
+    const handleTogglePin = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const checked = e.target.checked;
+        setIsPinning(true);
+        setPinningError("");
+        try {
+            const res = await fetch(`/api/rolls/${roll.id}/pin`, {
+                method: "PATCH",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ isPinned: checked })
+            });
+            if (res.ok) {
+                setEditIsPinned(checked);
+            } else {
+                const text = await res.text();
+                setPinningError(text || "Failed to update pin state.");
+            }
+        } catch (error) {
+            console.error(error);
+            setPinningError("An error occurred.");
+        } finally {
+            setIsPinning(false);
         }
     };
 
@@ -288,6 +315,27 @@ export default function RollEditorClient({ roll, archives }: RollClientProps) {
                                     </span>
                                 </div>
                             </label>
+
+                            <label className={`flex items-center gap-3 p-2 -ml-2 rounded transition-colors w-fit mt-2 ${!derivedShowOnProfile || isPinning ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer group hover:bg-white/5'}`}>
+                                <input
+                                    type="checkbox"
+                                    checked={editIsPinned}
+                                    onChange={handleTogglePin}
+                                    disabled={!derivedShowOnProfile || isPinning}
+                                    className="w-4 h-4 rounded border-foreground/20 text-yellow-500 focus:ring-yellow-500 bg-transparent disabled:opacity-50"
+                                />
+                                <div className="flex flex-col">
+                                    <span className={`text-sm font-medium ${!derivedShowOnProfile ? 'text-foreground/90' : 'text-foreground/90 group-hover:text-foreground'}`}>
+                                        Pin to Public Profile {isPinning && <Loader2 className="w-3 h-3 animate-spin inline ml-2" />}
+                                    </span>
+                                    <span className="text-xs text-foreground/50">
+                                        Pinned rolls bypass the standard grid and display elegantly at the absolute top of your page. (Max 3)
+                                    </span>
+                                    {pinningError && (
+                                        <span className="text-xs text-red-500 mt-1">{pinningError}</span>
+                                    )}
+                                </div>
+                            </label>
                         </div>
                         <div className="flex items-center justify-between pt-4 border-t border-border/50">
                             <div className="flex items-center gap-3">
@@ -313,7 +361,14 @@ export default function RollEditorClient({ roll, archives }: RollClientProps) {
                                 <ArrowLeft className="w-4 h-4 shrink-0" /> Back to Your Vault
                             </Link>
                             <div className="flex items-center gap-4 mb-4">
-                                <h1 className="text-4xl md:text-5xl font-bold tracking-tight">{metadata.title}</h1>
+                                <h1 className="text-4xl md:text-5xl font-bold tracking-tight flex items-center gap-3">
+                                    {metadata.title}
+                                    {editIsPinned && (
+                                        <span title="Pinned to Public Profile" className="flex items-center justify-center bg-yellow-500/10 text-yellow-500 rounded-full p-2.5">
+                                            <Pin className="w-5 h-5 md:w-6 md:h-6 fill-yellow-500/20" />
+                                        </span>
+                                    )}
+                                </h1>
 
                                 <div className="flex items-center gap-1 sm:gap-2 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
                                     <ShareIcon url={`${typeof window !== 'undefined' ? window.location.origin : ''}/u/${roll.user.username}/${roll.slug || roll.id}`} />

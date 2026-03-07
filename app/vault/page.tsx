@@ -3,7 +3,7 @@ import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import Link from "next/link";
 import { Button } from "@/components/Button";
-import { FolderHeart, Plus } from "lucide-react";
+import { FolderHeart, Plus, Pin } from "lucide-react";
 import { CreateArchiveForm } from "./CreateArchiveForm";
 
 export default async function VaultPage() {
@@ -102,7 +102,12 @@ export default async function VaultPage() {
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                         {displayRolls.map((roll: any, i: number) => (
                             <Link key={roll.id} href={`/vault/rolls/${roll.id}`} className="block group animate-in fade-in slide-in-from-bottom-4 duration-700 fill-mode-both" style={{ animationDelay: `${i * 50}ms` }}>
-                                <div className="relative bg-card rounded-xl border border-border/50 p-4 shadow-sm hover:shadow-xl hover:border-white/20 transition-all flex items-center gap-5 overflow-hidden">
+                                <div className={`relative rounded-xl border p-4 shadow-sm hover:shadow-xl transition-all flex items-center gap-5 overflow-hidden ${roll.pinOrder !== null ? 'bg-yellow-500/5 border-yellow-500/30 hover:border-yellow-400/50' : 'bg-card border-border/50 hover:border-white/20'}`}>
+                                    {roll.pinOrder !== null && (
+                                        <div className="absolute top-3 right-3 text-yellow-500 opacity-80 z-20">
+                                            <Pin className="w-4 h-4 fill-yellow-500/20" />
+                                        </div>
+                                    )}
                                     <div className="absolute top-0 right-0 w-32 h-32 bg-accent/5 rounded-full blur-[40px] pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity" />
 
                                     <div className="w-20 h-20 shrink-0 bg-black rounded-lg overflow-hidden relative border border-white/5 z-10">

@@ -15,9 +15,12 @@ interface ProfileProps {
         tier: string;
         photoCount: number;
     };
+    rolls: any[];
 }
 
-export default function ProfileEditor({ user }: ProfileProps) {
+import PinnedRollsManager from "./PinnedRollsManager";
+
+export default function ProfileEditor({ user, rolls }: ProfileProps) {
     const [bio, setBio] = useState(user.bio || "");
     const [avatar, setAvatar] = useState(user.avatar || "");
     const [isSaving, setIsSaving] = useState(false);
@@ -230,6 +233,9 @@ export default function ProfileEditor({ user }: ProfileProps) {
                     )}
                 </div>
             </div>
+
+            {/* Pinned Rolls Manager Segment */}
+            <PinnedRollsManager initialRolls={rolls} />
 
             {/* Cropper Modal Overlay */}
             {imageSrc && (

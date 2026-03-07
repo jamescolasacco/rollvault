@@ -23,9 +23,19 @@ export default async function ProfilePage() {
         where: { roll: { userId: session.user.id } }
     });
 
+    // Fetch all user rolls to pass to the pinning manager
+    const rolls = await prisma.roll.findMany({
+        // @ts-ignore
+        where: { userId: session.user.id },
+        orderBy: { createdAt: "desc" },
+        include: {
+            photos: { take: 1, orderBy: { orderIndex: "asc" } }
+        }
+    });
+
     return (
         <div className="py-8">
-            <ProfileEditor user={{ ...user, photoCount }} />
+            <ProfileEditor user={{ ...user, photoCount }} rolls={rolls} />
         </div>
     );
 }

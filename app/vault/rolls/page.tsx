@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 import Link from "next/link";
 import { Button } from "@/components/Button";
 import { ArrowLeft, Plus } from "lucide-react";
+import RollsGrid from "./RollsGrid";
 
 export default async function AllRollsPage() {
     const session = await getServerSession(authOptions);
@@ -45,28 +46,7 @@ export default async function AllRollsPage() {
                     </Link>
                 </div>
             ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {rolls.map((roll: any, i: number) => (
-                        <Link key={roll.id} href={`/vault/rolls/${roll.id}`} className="block group animate-in fade-in slide-in-from-bottom-4 duration-700 fill-mode-both" style={{ animationDelay: `${(i % 12) * 50}ms` }}>
-                            <div className="relative bg-card rounded-xl border border-border/50 p-4 shadow-sm hover:shadow-xl hover:border-white/20 transition-all flex items-center gap-5 overflow-hidden">
-                                <div className="absolute top-0 right-0 w-32 h-32 bg-accent/5 rounded-full blur-[40px] pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity" />
-
-                                <div className="w-20 h-20 shrink-0 bg-black rounded-lg overflow-hidden relative border border-white/5 z-10">
-                                    {roll.coverImage || roll.photos?.[0]?.url ? (
-                                        <img src={roll.coverImage || roll.photos[0].url} className="w-full h-full object-cover opacity-70 group-hover:opacity-100 transition duration-500 mix-blend-screen scale-105" alt="cover" />
-                                    ) : (
-                                        <div className="w-full h-full flex items-center justify-center font-mono text-[8px] text-foreground opacity-20 uppercase tracking-widest text-center">Empty</div>
-                                    )}
-                                </div>
-                                <div className="flex-1 min-w-0 z-10 leading-tight">
-                                    <h3 className="font-bold text-lg text-foreground group-hover:text-white transition-colors truncate">{roll.title}</h3>
-                                    <p className="text-xs font-mono text-foreground opacity-40 mt-1 uppercase tracking-widest">{roll._count.photos} frames</p>
-                                    <p className="text-sm mt-1.5 text-foreground opacity-50 italic line-clamp-1">{roll.description || "No description."}</p>
-                                </div>
-                            </div>
-                        </Link>
-                    ))}
-                </div>
+                <RollsGrid initialRolls={rolls} />
             )}
         </div>
     );

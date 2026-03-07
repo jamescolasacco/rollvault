@@ -1,12 +1,17 @@
 import { prisma } from "@/lib/prisma";
 import Link from "next/link";
-import { Film, FolderHeart } from "lucide-react";
+import { Film, FolderHeart, Pin } from "lucide-react";
 import { ShareButton } from "@/components/ShareButton";
 
-const PublicRollCard = ({ roll, username, index }: { roll: any, username: string, index: number }) => (
-    <div className="animate-in fade-in slide-in-from-bottom-8 duration-1000 fill-mode-both" style={{ animationDelay: `${index * 150}ms` }}>
+const PublicRollCard = ({ roll, username, index, isPinned }: { roll: any, username: string, index: number, isPinned?: boolean }) => (
+    <div className="animate-in fade-in slide-in-from-bottom-8 duration-1000 fill-mode-both relative" style={{ animationDelay: `${index * 150}ms` }}>
+        {isPinned && (
+            <div className="absolute -top-3 -right-3 sm:-right-4 z-50 bg-[#110e0c] p-2 rounded-full border border-white/10 shadow-xl rotate-12">
+                <Pin className="w-4 h-4 text-yellow-500 fill-yellow-500/20" />
+            </div>
+        )}
         <Link href={`/u/${username}/${roll.slug || roll.id}`} className="block group">
-            <div className="w-full relative flex items-center bg-[#110e0c] shadow-2xl overflow-hidden rounded-sm ring-1 ring-white/5 hover:scale-[1.01] transition-transform duration-300 p-4 sm:py-[30px] sm:px-[20px]">
+            <div className={`w-full relative flex items-center bg-[#110e0c] shadow-2xl overflow-hidden rounded-sm ring-1 ring-white/5 hover:scale-[1.01] transition-transform duration-300 p-4 sm:py-[30px] sm:px-[20px] ${isPinned ? 'border-t-2 border-yellow-500/30' : ''}`}>
                 {/* Top Edge */}
                 <div className="absolute top-0 left-0 right-0 h-[24px] w-full pointer-events-none">
                     <svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none">
@@ -118,7 +123,7 @@ export default async function PublicProfile({ params }: { params: Promise<{ user
                 orderBy: { createdAt: "desc" },
                 include: {
                     rolls: {
-                        where: { showOnProfile: true },
+                        where: { showOnProfile: true, pinOrder: null },
                         orderBy: { createdAt: "desc" },
                         include: {
                             _count: { select: { photos: true } },
@@ -129,7 +134,7 @@ export default async function PublicProfile({ params }: { params: Promise<{ user
             },
             rolls: {
                 // @ts-ignore
-                where: { archives: { none: {} }, showOnProfile: true },
+                where: { archives: { none: {} }, showOnProfile: true, pinOrder: null },
                 orderBy: { createdAt: "desc" },
                 include: {
                     _count: { select: { photos: true } },
@@ -143,7 +148,17 @@ export default async function PublicProfile({ params }: { params: Promise<{ user
         return <div className="min-h-screen flex items-center justify-center text-foreground/50">Photographer not found.</div>;
     }
 
-    const hasContent = user.rolls.length > 0 || user.archives.some((a: any) => a.rolls.length > 0);
+    // Fetch pinned rolls across both archived and unarchived sets
+    const pinnedRolls = await prisma.roll.findMany({
+        where: { userId: user.id, showOnProfile: true, pinOrder: { not: null } },
+        orderBy: { pinOrder: 'asc' },
+        include: {
+            _count: { select: { photos: true } },
+            photos: { take: 1, orderBy: { orderIndex: "asc" } }
+        }
+    });
+
+    const hasContent = user.rolls.length > 0 || user.archives.some((a: any) => a.rolls.length > 0) || pinnedRolls.length > 0;
 
     return (
         <div className="min-h-screen pt-8 pb-16 sm:py-24 px-4 sm:px-6 flex flex-col items-center max-w-2xl mx-auto space-y-12 sm:space-y-16 relative">
@@ -185,6 +200,19 @@ export default async function PublicProfile({ params }: { params: Promise<{ user
                     </div>
                 ) : (
                     <>
+                        {/* Pinned Rolls Showcase */}
+                        {pinnedRolls.length > 0 && (
+                            <div className="space-y-4 border-b border-border/50 pb-8 mb-8">
+                                <div className="flex items-center justify-center gap-2 mb-6">
+                                    <Pin className="w-4 h-4 text-yellow-500" />
+                                    <span className="text-xs font-mono uppercase tracking-widest text-yellow-500/80">Pinned Rolls</span>
+                                </div>
+                                {pinnedRolls.map((roll: any, i: number) => (
+                                    <PublicRollCard key={roll.id} roll={roll} username={user.username} index={i} isPinned />
+                                ))}
+                            </div>
+                        )}
+
                         {/* Unarchived Rolls */}
                         {user.rolls.length > 0 && (
                             <div className="space-y-4">
