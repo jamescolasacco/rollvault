@@ -142,7 +142,7 @@ export default async function VaultPage({
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-l-4 border-accent pl-4">
                     <div>
                         <h2 className="text-2xl font-bold tracking-tight mb-1">Your Archives</h2>
-                        <p className="text-sm text-foreground opacity-60">Organize your collections into subfolders.</p>
+                        <p className="text-sm text-foreground opacity-60">Organize your rolls.</p>
                     </div>
                     <CreateArchiveForm />
                 </div>
