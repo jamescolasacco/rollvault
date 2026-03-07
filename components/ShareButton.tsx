@@ -16,9 +16,27 @@ export function ShareButton({ title = "Share to Web", variant = "safelight", cla
 
     const handleShare = async () => {
         try {
-            // Write the provided url or fallback to the current browser URL
             const shareUrl = url || window.location.href;
-            await navigator.clipboard.writeText(shareUrl);
+
+            if (navigator.clipboard && window.isSecureContext) {
+                await navigator.clipboard.writeText(shareUrl);
+            } else {
+                // Fallback for non-HTTPS local development (e.g. mobile testing on LAN)
+                const textArea = document.createElement("textarea");
+                textArea.value = shareUrl;
+                textArea.style.position = "absolute";
+                textArea.style.left = "-999999px";
+                document.body.prepend(textArea);
+                textArea.select();
+                try {
+                    document.execCommand("copy");
+                } catch (error) {
+                    console.error("Fallback copy failed", error);
+                } finally {
+                    textArea.remove();
+                }
+            }
+
             setCopied(true);
             setTimeout(() => setCopied(false), 2000);
         } catch (err) {

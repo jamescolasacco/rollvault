@@ -106,20 +106,21 @@ export default async function PublicProfile({ params }: { params: Promise<{ user
     const hasContent = user.rolls.length > 0 || user.archives.some((a: any) => a.rolls.length > 0);
 
     return (
-        <div className="min-h-screen py-16 sm:py-24 px-4 sm:px-6 flex flex-col items-center max-w-2xl mx-auto space-y-12 sm:space-y-16 relative">
-            {/* Home Navigation */}
-            <div className="absolute top-6 sm:top-8 left-4 sm:left-8 z-50">
+        <div className="min-h-screen pt-8 pb-16 sm:py-24 px-4 sm:px-6 flex flex-col items-center max-w-2xl mx-auto space-y-12 sm:space-y-16 relative">
+            {/* Mobile-Friendly Navigation Header */}
+            <div className="w-full flex items-center justify-between z-50 mb-8 sm:absolute sm:top-8 sm:left-8 sm:right-8 sm:mb-0 sm:w-auto sm:justify-start">
+                {/* Home/Logo */}
                 <Link href="/" className="inline-flex items-center gap-2 font-serif italic text-lg sm:text-xl tracking-wide text-foreground/80 hover:text-foreground transition-colors">
                     <img src="/logo.png" alt="RollVault" className="h-6 sm:h-7 w-auto" />
                 </Link>
+
+                {/* Share Dropdown (Mobile Right / Desktop Top-Right Absolute) */}
+                <div className="sm:absolute sm:right-0 sm:top-0">
+                    <ShareButton title="Share" variant="outline" />
+                </div>
             </div>
 
-            {/* Share Profile */}
-            <div className="absolute top-6 sm:top-8 right-4 sm:right-8 z-50">
-                <ShareButton title="Share" variant="outline" />
-            </div>
-
-            <div className="absolute top-0 left-1/2 w-[800px] h-[400px] bg-accent/5 rounded-full blur-[120px] pointer-events-none -translate-x-1/2 -translate-y-1/2" />
+            <div className="absolute top-0 left-1/2 w-full max-w-[800px] h-[400px] bg-accent/5 rounded-full blur-[120px] pointer-events-none -translate-x-1/2 -translate-y-1/2 overflow-hidden" />
 
             <div className="text-center space-y-4 z-10 w-full animate-in fade-in slide-in-from-bottom-4 duration-1000">
                 <div className="w-24 h-24 mx-auto bg-card rounded-full flex items-center justify-center border border-border shadow-2xl relative overflow-hidden">
