@@ -55,7 +55,7 @@ export default async function Home() {
 
           <h1 className="text-4xl sm:text-5xl md:text-7xl font-bold tracking-tight px-2 sm:px-0 leading-[1.2]">
             Your film, <br />
-            <span className="text-foreground italic font-serif inline-block pr-6" style={{ filter: 'opacity(50%)' }}>beautifully displayed.</span>
+            <span className="text-foreground italic font-serif inline-block" style={{ filter: 'opacity(50%)' }}>beautifully displayed.</span>
           </h1>
 
           <p className="text-lg md:text-xl text-foreground/60 max-w-xl mx-auto text-balance px-2 sm:px-0">
