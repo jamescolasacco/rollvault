@@ -24,7 +24,7 @@ export default function RollEditorClient({ roll, archives }: RollClientProps) {
     const [isSaving, setIsSaving] = useState(false);
     const [editTitle, setEditTitle] = useState(roll.title);
     const [editDesc, setEditDesc] = useState(roll.description || "");
-    const [editDate, setEditDate] = useState(roll.dateDeveloped ? new Date(roll.dateDeveloped).toISOString().split('T')[0] : "");
+    const [editDate, setEditDate] = useState(roll.dateDeveloped ? new Date(roll.dateDeveloped).toISOString().split('T')[0] : new Date(roll.createdAt).toISOString().split('T')[0]);
     const [editArchiveIds, setEditArchiveIds] = useState<string[]>(roll.archives.map((a: any) => a.id));
     const [editCoverImage, setEditCoverImage] = useState(roll.coverImage || "");
     const [editShowOnProfile, setEditShowOnProfile] = useState(roll.showOnProfile ?? true);
@@ -72,7 +72,7 @@ export default function RollEditorClient({ roll, archives }: RollClientProps) {
                 if (updated.dateDeveloped) {
                     setEditDate(new Date(updated.dateDeveloped).toISOString().split('T')[0]);
                 } else {
-                    setEditDate("");
+                    setEditDate(new Date(roll.createdAt).toISOString().split('T')[0]);
                 }
                 setEditArchiveIds(updated.archives.map((a: any) => a.id));
                 setEditShowOnProfile(updated.showOnProfile);
@@ -351,8 +351,8 @@ export default function RollEditorClient({ roll, archives }: RollClientProps) {
                                         disabled={isPinning}
                                         title={editIsPinned ? "Unpin from Public Profile" : "Pin to Public Profile"}
                                         className={`flex items-center justify-center rounded-full p-2.5 transition-colors ${editIsPinned
-                                                ? 'bg-yellow-500/10 text-yellow-500 hover:bg-yellow-500/20'
-                                                : 'bg-white/5 text-foreground/40 hover:bg-white/10 hover:text-foreground/80'
+                                            ? 'bg-yellow-500/10 text-yellow-500 hover:bg-yellow-500/20'
+                                            : 'bg-white/5 text-foreground/40 hover:bg-white/10 hover:text-foreground/80'
                                             } ${isPinning ? 'opacity-50 cursor-not-allowed' : ''}`}
                                     >
                                         {isPinning ? <Loader2 className="w-5 h-5 md:w-6 md:h-6 animate-spin" /> : <Pin className={`w-5 h-5 md:w-6 md:h-6 ${editIsPinned ? 'fill-yellow-500/20' : ''}`} />}
