@@ -6,11 +6,7 @@ import { Button } from "@/components/Button";
 import { FolderHeart, Plus } from "lucide-react";
 import { CreateArchiveForm } from "./CreateArchiveForm";
 
-export default async function VaultPage({
-    searchParams
-}: {
-    searchParams?: Promise<{ [key: string]: string | string[] | undefined }>
-}) {
+export default async function VaultPage() {
     const session = await getServerSession(authOptions);
 
     // @ts-ignore
@@ -42,12 +38,8 @@ export default async function VaultPage({
     const totalFrames = rolls.reduce((acc: number, roll: any) => acc + roll._count.photos, 0);
     const totalArchives = archives.length;
 
-    const resolvedSearchParams = await searchParams;
-    const showAllRolls = resolvedSearchParams?.showAllRolls === "true";
-    const showAllArchives = resolvedSearchParams?.showAllArchives === "true";
-
-    const displayRolls = showAllRolls ? rolls : rolls.slice(0, 6);
-    const displayArchives = showAllArchives ? archives : archives.slice(0, 6);
+    const displayRolls = rolls.slice(0, 3);
+    const displayArchives = archives.slice(0, 3);
 
     return (
         <div className="space-y-12 mt-8 animate-in fade-in duration-700">
@@ -64,11 +56,6 @@ export default async function VaultPage({
                     <Link href="/vault/profile">
                         <Button variant="outline" className="gap-2">
                             Edit Profile
-                        </Button>
-                    </Link>
-                    <Link href="/vault/rolls/new">
-                        <Button variant="safelight" className="gap-2">
-                            <Plus className="w-4 h-4" /> New Roll
                         </Button>
                     </Link>
                 </div>
@@ -90,10 +77,18 @@ export default async function VaultPage({
                 </div>
             </div>
 
-            {/* Recent Rolls */}
+            {/* Your Rolls */}
             <div className="space-y-6">
-                <div className="flex items-center justify-between border-b border-border/50 pb-2">
-                    <h2 className="text-2xl font-bold tracking-tight">Recent Rolls</h2>
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-l-4 border-accent pl-4">
+                    <div>
+                        <h2 className="text-2xl font-bold tracking-tight mb-1">Your Rolls</h2>
+                        <p className="text-sm text-foreground opacity-60">Manage your developed rolls.</p>
+                    </div>
+                    <Link href="/vault/rolls/new">
+                        <Button variant="safelight" className="gap-2">
+                            <Plus className="w-4 h-4" /> New Roll
+                        </Button>
+                    </Link>
                 </div>
 
                 {rolls.length === 0 ? (
@@ -128,10 +123,10 @@ export default async function VaultPage({
                     </div>
                 )}
 
-                {rolls.length > 6 && !showAllRolls && (
+                {rolls.length > 3 && (
                     <div className="mt-8 flex justify-center animate-in fade-in duration-700">
-                        <Link href={`/vault?showAllRolls=true${showAllArchives ? '&showAllArchives=true' : ''}`} scroll={false}>
-                            <Button variant="outline">Show all rolls ({rolls.length})</Button>
+                        <Link href="/vault/rolls">
+                            <Button variant="outline">View all rolls ({rolls.length})</Button>
                         </Link>
                     </div>
                 )}
@@ -174,10 +169,10 @@ export default async function VaultPage({
                     </div>
                 )}
 
-                {archives.length > 6 && !showAllArchives && (
+                {archives.length > 3 && (
                     <div className="mt-8 flex justify-center animate-in fade-in duration-700">
-                        <Link href={`/vault?showAllArchives=true${showAllRolls ? '&showAllRolls=true' : ''}`} scroll={false}>
-                            <Button variant="outline">Show all archives ({archives.length})</Button>
+                        <Link href="/vault/archives">
+                            <Button variant="outline">View all archives ({archives.length})</Button>
                         </Link>
                     </div>
                 )}
