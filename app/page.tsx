@@ -88,33 +88,31 @@ export default async function Home() {
           </div>
         </div>
 
-        {/* Abstract Film Roll Visual */}
-        <div className="mt-16 sm:mt-24 w-full max-w-5xl opacity-90 transition-opacity hover:opacity-100 duration-1000 group">
-          <div className="relative h-fit border-y-[4px] sm:border-y-8 border-black bg-[#0a0a0a] shadow-2xl overflow-hidden mix-blend-screen flex flex-col justify-center">
-            {/* Sprocket holes top */}
-            <div className="absolute top-0 inset-x-0 h-4 sm:h-8 flex justify-around items-center opacity-20 pointer-events-none z-0">
-              {[...Array(30)].map((_, i) => (
-                <div key={`top-${i}`} className="w-1.5 sm:w-3 h-1 sm:h-2 bg-background rounded-[1px]" />
-              ))}
-            </div>
-
+        {/* Simplified Film Strip (No Sprockets) */}
+        <div className="mt-12 sm:mt-16 w-full max-w-6xl animate-in fade-in slide-in-from-bottom-8 duration-1000 delay-300">
+          <div className="relative overflow-hidden">
             {/* Scroll Viewport */}
             <div className="w-full overflow-x-auto overflow-y-hidden snap-x snap-mandatory relative z-10 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
-              {/* Flex Track enforcing literal width */}
-              <div className="flex flex-nowrap w-max gap-3 sm:gap-6 px-4 sm:px-8 py-6 sm:py-12 items-center">
+              <div className="flex flex-nowrap w-max gap-3 sm:gap-6 px-4 sm:px-8 py-4 sm:py-8 items-center">
                 {[1, 2, 3, 4, 5].map((frame, index) => {
                   const fileExists = demoFiles[index];
                   return (
                     <div
                       key={frame}
-                      style={{ flex: "0 0 auto", minWidth: "12rem" }}
-                      className="w-48 sm:w-72 sm:min-w-[18rem] h-32 sm:h-48 bg-card rounded flex flex-col items-center justify-center border border-border/10 overflow-hidden relative snap-center shadow-xl"
+                      style={{ flex: "0 0 auto" }}
+                      className="w-56 sm:w-96 h-40 sm:h-64 bg-[#0a0a0a] rounded-sm ring-1 ring-white/5 overflow-hidden relative snap-center shadow-2xl transition-all duration-700 hover:scale-[1.02] hover:ring-white/10 group/frame"
                     >
-                      <div className="absolute inset-0 bg-gradient-to-tr from-black to-zinc-800 z-0" />
-                      {/* Fallback text if image hasn't been added yet */}
+                      <div className="absolute inset-0 bg-gradient-to-tr from-[#050505] to-zinc-900/40 z-0 pointer-events-none" />
+
+                      {/* Frame Label */}
+                      <div className="absolute top-3 left-3 z-30 opacity-40">
+                        <span className="font-mono text-[8px] sm:text-[10px] text-white tracking-[0.2em]">FRAME {String(frame).padStart(2, '0')}</span>
+                      </div>
+
+                      {/* Fallback if no image */}
                       {!fileExists && (
-                        <div className="relative z-10 flex flex-col items-center text-center opacity-30 mt-2 pointer-events-none">
-                          <span className="font-mono text-xs text-foreground">Frame {frame}</span>
+                        <div className="absolute inset-0 z-10 flex flex-col items-center justify-center opacity-10 pointer-events-none">
+                          <Camera className="w-12 h-12" />
                         </div>
                       )}
 
@@ -123,20 +121,21 @@ export default async function Home() {
                         <img
                           src={`/demo/${frame}.webp`}
                           alt={`Demo Frame ${frame}`}
-                          className="absolute inset-0 w-full h-full object-cover z-20 opacity-90 mix-blend-screen pointer-events-none"
+                          className="absolute inset-0 w-full h-full object-cover z-20 opacity-80 group-hover/frame:opacity-100 transition duration-700 mix-blend-screen scale-[1.01]"
                         />
                       )}
+
+                      {/* Subtle Inner Shadow */}
+                      <div className="absolute inset-0 shadow-[inner_0_0_40px_rgba(0,0,0,0.8)] z-30 pointer-events-none" />
                     </div>
                   )
                 })}
               </div>
             </div>
 
-            {/* Sprocket holes bottom */}
-            <div className="absolute bottom-0 inset-x-0 h-4 sm:h-8 flex justify-around items-center opacity-20 pointer-events-none z-0">
-              {[...Array(30)].map((_, i) => (
-                <div key={`bot-${i}`} className="w-1.5 sm:w-3 h-1 sm:h-2 bg-background rounded-[1px]" />
-              ))}
+            {/* Edge Labels */}
+            <div className="absolute top-1/2 left-4 -translate-y-1/2 font-mono text-[10px] sm:text-xs text-yellow-600/20 mix-blend-overlay rotate-90 pointer-events-none tracking-[1em] z-30 uppercase">
+              RollVault Safelight
             </div>
           </div>
         </div>
