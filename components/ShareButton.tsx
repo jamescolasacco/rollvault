@@ -16,7 +16,7 @@ export function ShareButton({ title = "Share to Web", variant = "safelight", cla
 
     const handleShare = async () => {
         try {
-            const shareUrl = url || window.location.href;
+            const shareUrl = url || (window.location.origin + window.location.pathname);
 
             if (navigator.clipboard && window.isSecureContext) {
                 await navigator.clipboard.writeText(shareUrl);
