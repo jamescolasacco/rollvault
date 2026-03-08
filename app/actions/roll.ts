@@ -15,10 +15,10 @@ export async function createRoll(formData: FormData) {
 
     if (!title) throw new Error("Title is required");
 
-    let baseSlug = title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '');
-    if (!baseSlug) baseSlug = "roll";
-    const suffix = Math.random().toString(36).substring(2, 7);
-    const slug = `${baseSlug}-${suffix}`;
+    // Generate a random 18-char alphanumeric slug (e.g. "ft3ng8gd9se0hh4fr3")
+    const slug = Array.from(crypto.getRandomValues(new Uint8Array(18)))
+        .map(b => (b % 36).toString(36))
+        .join('');
 
     const roll = await prisma.roll.create({
         data: {
