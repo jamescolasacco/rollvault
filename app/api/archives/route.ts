@@ -9,6 +9,9 @@ export async function GET() {
         if (!(session?.user as any)?.id) {
             return new NextResponse("Unauthorized", { status: 401 });
         }
+        if ((session?.user as any)?.emailVerified === false) {
+            return new NextResponse("Email verification required", { status: 403 });
+        }
 
         const archives = await prisma.archive.findMany({
             where: { userId: (session?.user as any).id },
@@ -27,6 +30,9 @@ export async function POST(req: Request) {
         const session = await getServerSession(authOptions);
         if (!(session?.user as any)?.id) {
             return new NextResponse("Unauthorized", { status: 401 });
+        }
+        if ((session?.user as any)?.emailVerified === false) {
+            return new NextResponse("Email verification required", { status: 403 });
         }
 
         const { title, description } = await req.json();

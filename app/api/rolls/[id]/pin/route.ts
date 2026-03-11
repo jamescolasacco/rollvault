@@ -9,6 +9,9 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
         if (!(session?.user as any)?.id) {
             return new NextResponse("Unauthorized", { status: 401 });
         }
+        if ((session?.user as any)?.emailVerified === false) {
+            return new NextResponse("Email verification required", { status: 403 });
+        }
 
         const userId = (session!.user as any).id;
         const { id } = await params;

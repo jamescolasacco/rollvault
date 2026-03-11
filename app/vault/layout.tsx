@@ -4,10 +4,20 @@ import { redirect } from "next/navigation";
 import Link from "next/link";
 import { Film } from "lucide-react";
 import { LogoutButton } from "@/components/LogoutButton";
+import { prisma } from "@/lib/prisma";
 
 export default async function VaultLayout({ children }: { children: React.ReactNode }) {
     const session = await getServerSession(authOptions);
-    if (!session) {
+    if (!session?.user?.id) {
+        redirect("/login");
+    }
+
+    const user = await prisma.user.findUnique({
+        where: { id: session.user.id },
+        select: { emailVerified: true },
+    });
+
+    if (!user || !user.emailVerified) {
         redirect("/login");
     }
 

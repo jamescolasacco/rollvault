@@ -6,22 +6,42 @@ import { writeFile, mkdir, unlink } from "fs/promises";
 import { join } from "path";
 import { v4 as uuidv4 } from "uuid";
 import sharp from "sharp";
+import { buildUploadVerificationMessage } from "@/lib/uploadVerification";
+
+const MAX_COVER_SIZE_BYTES = 20 * 1024 * 1024;
 
 export async function POST(req: Request, { params }: { params: Promise<{ id: string }> }) {
     try {
         const session = await getServerSession(authOptions);
-        // @ts-ignore
         if (!session?.user?.id) {
             return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+        }
+        if (!session.user.emailVerified) {
+            return NextResponse.json({ error: "Email verification required." }, { status: 403 });
         }
 
         const { id } = await params;
 
         // Verify roll ownership
-        const roll = await prisma.roll.findUnique({ where: { id } });
-        // @ts-ignore
+        const roll = await prisma.roll.findUnique({
+            where: { id },
+            include: {
+                user: {
+                    select: {
+                        emailVerified: true,
+                    },
+                },
+            },
+        });
         if (!roll || roll.userId !== session.user.id) {
             return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+        }
+
+        const uploadLockMessage = buildUploadVerificationMessage({
+            emailVerified: roll.user.emailVerified,
+        });
+        if (uploadLockMessage) {
+            return NextResponse.json({ error: uploadLockMessage }, { status: 403 });
         }
 
         const formData = await req.formData();
@@ -29,6 +49,13 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
 
         if (!file) {
             return NextResponse.json({ error: "No file provided" }, { status: 400 });
+        }
+
+        if (!file.type.startsWith("image/")) {
+            return NextResponse.json({ error: "Unsupported file type." }, { status: 400 });
+        }
+        if (file.size > MAX_COVER_SIZE_BYTES) {
+            return NextResponse.json({ error: "Cover image must be 20MB or less." }, { status: 400 });
         }
 
         const bytes = await file.arrayBuffer();
@@ -65,15 +92,16 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
 export async function DELETE(req: Request, { params }: { params: Promise<{ id: string }> }) {
     try {
         const session = await getServerSession(authOptions);
-        // @ts-ignore
         if (!session?.user?.id) {
             return new NextResponse("Unauthorized", { status: 401 });
+        }
+        if (!session.user.emailVerified) {
+            return new NextResponse("Email verification required", { status: 403 });
         }
 
         const { id } = await params;
 
         const roll = await prisma.roll.findUnique({ where: { id } });
-        // @ts-ignore
         if (!roll || roll.userId !== session.user.id) {
             return new NextResponse("Unauthorized", { status: 401 });
         }

@@ -10,6 +10,7 @@ import { Input } from "@/components/Input";
 import { ShareIcon } from "@/components/ShareIcon";
 import { ArchiveSelectionModal } from "./ArchiveSelectionModal";
 import { useRouter } from "next/navigation";
+import { buildUploadVerificationMessage } from "@/lib/uploadVerification";
 
 interface RollClientProps {
     roll: any;
@@ -19,6 +20,9 @@ interface RollClientProps {
 export default function RollEditorClient({ roll, archives }: RollClientProps) {
     const router = useRouter();
     const [photos, setPhotos] = useState(roll.photos);
+    const uploadLockMessage = buildUploadVerificationMessage({
+        emailVerified: Boolean(roll.user.emailVerified),
+    });
 
     // Metadata Editing State
     const [isEditing, setIsEditing] = useState(false);
@@ -397,6 +401,8 @@ export default function RollEditorClient({ roll, archives }: RollClientProps) {
                             rollId={roll.id}
                             onUploadStart={handleUploadStart}
                             onUploadSuccess={handleUploadSuccess}
+                            disabled={Boolean(uploadLockMessage)}
+                            disabledMessage={uploadLockMessage ?? undefined}
                         />
                     </div>
                 </div>

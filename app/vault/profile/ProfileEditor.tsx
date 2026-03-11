@@ -6,10 +6,14 @@ import { Button } from "@/components/Button";
 import Link from "next/link";
 import Cropper from "react-easy-crop";
 import { getCroppedImg } from "@/lib/cropImage";
+import AccountSecurityCard from "./AccountSecurityCard";
 
 interface ProfileProps {
     user: {
         username: string;
+        email: string;
+        emailVerified: boolean;
+        totpEnabled: boolean;
         bio: string | null;
         avatar: string | null;
         tier: string;
@@ -183,6 +187,14 @@ export default function ProfileEditor({ user, rolls }: ProfileProps) {
                     </div>
                 </form>
             </div>
+
+            <AccountSecurityCard
+                user={{
+                    email: user.email,
+                    emailVerified: user.emailVerified,
+                    totpEnabled: user.totpEnabled,
+                }}
+            />
 
             {/* Subscription & Limits Card */}
             <div className="bg-card/20 border border-border rounded-xl p-8 shadow-xl">

@@ -3,13 +3,37 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import sharp from "sharp";
+import { buildUploadVerificationMessage } from "@/lib/uploadVerification";
+
+const MAX_AVATAR_SIZE_BYTES = 10 * 1024 * 1024;
 
 export async function POST(req: Request) {
     try {
         const session = await getServerSession(authOptions);
-        // @ts-ignore
         if (!session?.user?.id) {
             return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+        }
+        if (!session.user.emailVerified) {
+            return NextResponse.json({ error: "Email verification required." }, { status: 403 });
+        }
+
+        const user = await prisma.user.findUnique({
+            where: { id: session.user.id },
+            select: {
+                id: true,
+                emailVerified: true,
+            },
+        });
+
+        if (!user) {
+            return NextResponse.json({ error: "User not found" }, { status: 404 });
+        }
+
+        const uploadLockMessage = buildUploadVerificationMessage({
+            emailVerified: user.emailVerified,
+        });
+        if (uploadLockMessage) {
+            return NextResponse.json({ error: uploadLockMessage }, { status: 403 });
         }
 
         const formData = await req.formData();
@@ -17,6 +41,14 @@ export async function POST(req: Request) {
 
         if (!file) {
             return NextResponse.json({ error: "No file provided" }, { status: 400 });
+        }
+
+        if (!file.type.startsWith("image/")) {
+            return NextResponse.json({ error: "Unsupported file type." }, { status: 400 });
+        }
+
+        if (file.size > MAX_AVATAR_SIZE_BYTES) {
+            return NextResponse.json({ error: "Avatar must be 10MB or less." }, { status: 400 });
         }
 
         const bytes = await file.arrayBuffer();
@@ -33,7 +65,6 @@ export async function POST(req: Request) {
 
         // Update User in DB
         const updated = await prisma.user.update({
-            // @ts-ignore
             where: { id: session.user.id },
             data: { avatar: base64Image },
             select: { id: true, username: true, bio: true, avatar: true }

@@ -7,10 +7,10 @@ import { revalidatePath } from "next/cache";
 import { writeFile, mkdir } from "fs/promises";
 import { join } from "path";
 import { v4 as uuidv4 } from "uuid";
+import { buildUploadVerificationMessage } from "@/lib/uploadVerification";
 
 export async function uploadPhoto(formData: FormData) {
     const session = await getServerSession(authOptions);
-    // @ts-ignore
     if (!session?.user?.id) throw new Error("Unauthorized");
 
     const file = formData.get("file") as File;
@@ -20,9 +20,22 @@ export async function uploadPhoto(formData: FormData) {
     if (!file || !rollId) throw new Error("Missing file or rollId");
 
     // Verify roll belongs to user
-    const roll = await prisma.roll.findUnique({ where: { id: rollId } });
-    // @ts-ignore
+    const roll = await prisma.roll.findUnique({
+        where: { id: rollId },
+        include: {
+            user: {
+                select: {
+                    emailVerified: true,
+                },
+            },
+        },
+    });
     if (!roll || roll.userId !== session.user.id) throw new Error("Unauthorized roll access");
+
+    const uploadLockMessage = buildUploadVerificationMessage({
+        emailVerified: roll.user.emailVerified,
+    });
+    if (uploadLockMessage) throw new Error(uploadLockMessage);
 
     const bytes = await file.arrayBuffer();
     const buffer = Buffer.from(bytes);

@@ -3,15 +3,22 @@
 import { useState, useRef, useCallback } from "react";
 import { Upload, X, Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { Button } from "@/components/Button";
 
 interface UploadDropzoneProps {
     rollId: string;
     onUploadStart?: (fileCount: number) => void;
     onUploadSuccess?: (photos: any[]) => void;
+    disabled?: boolean;
+    disabledMessage?: string;
 }
 
-export default function UploadDropzone({ rollId, onUploadStart, onUploadSuccess }: UploadDropzoneProps) {
+export default function UploadDropzone({
+    rollId,
+    onUploadStart,
+    onUploadSuccess,
+    disabled = false,
+    disabledMessage,
+}: UploadDropzoneProps) {
     const router = useRouter();
     const [isDragging, setIsDragging] = useState(false);
     const [isUploading, setIsUploading] = useState(false);
@@ -29,7 +36,7 @@ export default function UploadDropzone({ rollId, onUploadStart, onUploadSuccess 
     }, []);
 
     const uploadFiles = async (files: File[]) => {
-        if (files.length === 0) return;
+        if (files.length === 0 || disabled) return;
 
         setIsUploading(true);
         setError(null);
@@ -60,14 +67,16 @@ export default function UploadDropzone({ rollId, onUploadStart, onUploadSuccess 
     const handleDrop = useCallback((e: React.DragEvent) => {
         e.preventDefault();
         setIsDragging(false);
+        if (disabled) return;
 
         if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
             const validFiles = Array.from(e.dataTransfer.files).filter(file => file.type.startsWith("image/"));
             uploadFiles(validFiles);
         }
-    }, []);
+    }, [disabled, uploadFiles]);
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        if (disabled) return;
         if (e.target.files && e.target.files.length > 0) {
             const validFiles = Array.from(e.target.files).filter(file => file.type.startsWith("image/"));
             uploadFiles(validFiles);
@@ -80,9 +89,9 @@ export default function UploadDropzone({ rollId, onUploadStart, onUploadSuccess 
                 onDragOver={handleDragOver}
                 onDragLeave={handleDragLeave}
                 onDrop={handleDrop}
-                onClick={() => fileInputRef.current?.click()}
+                onClick={() => !disabled && fileInputRef.current?.click()}
                 className={`w-full border-2 border-dashed rounded-xl p-8 flex flex-col items-center justify-center text-center cursor-pointer transition-all duration-300
-          ${isDragging ? 'border-accent bg-accent/5' : 'border-border/60 hover:border-foreground/30 hover:bg-card/30'}
+          ${disabled ? 'border-amber-500/40 bg-amber-500/5 cursor-not-allowed' : isDragging ? 'border-accent bg-accent/5' : 'border-border/60 hover:border-foreground/30 hover:bg-card/30'}
           ${isUploading ? 'opacity-50 pointer-events-none' : ''}
         `}
             >
@@ -101,6 +110,16 @@ export default function UploadDropzone({ rollId, onUploadStart, onUploadSuccess 
                         <h3 className="font-medium text-foreground">Developing frames...</h3>
                         <p className="text-sm text-foreground/50 mt-1">This might take a moment.</p>
                     </div>
+                ) : disabled ? (
+                    <div className="flex flex-col items-center">
+                        <div className="w-12 h-12 rounded-full bg-amber-500/10 flex items-center justify-center mb-4">
+                            <X className="w-6 h-6 text-amber-400" />
+                        </div>
+                        <h3 className="font-semibold text-foreground text-lg mb-1">Uploads Locked</h3>
+                        <p className="text-sm text-foreground/60">
+                            {disabledMessage || "Complete account verification to upload images."}
+                        </p>
+                    </div>
                 ) : (
                     <div className="flex flex-col items-center">
                         <div className="w-12 h-12 rounded-full bg-accent/10 flex items-center justify-center mb-4">
@@ -112,6 +131,7 @@ export default function UploadDropzone({ rollId, onUploadStart, onUploadSuccess 
                 )}
             </div>
             {error && <p className="text-accent text-sm mt-3">{error}</p>}
+            {!error && disabled && disabledMessage && <p className="text-amber-300 text-sm mt-3">{disabledMessage}</p>}
         </div>
     );
 }

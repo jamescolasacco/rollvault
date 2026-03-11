@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
@@ -9,31 +9,134 @@ import { Input } from "@/components/Input";
 import { PasswordInput } from "@/components/PasswordInput";
 import { Film } from "lucide-react";
 
+const EMAIL_RESEND_COOLDOWN_SECONDS = 60;
+
+function parseEmailVerificationRequiredError(error: string): number | null {
+    const match = /^EMAIL_VERIFICATION_REQUIRED(?::(\d+))?$/.exec(error);
+    if (!match) return null;
+
+    const rawCooldown = match[1]
+        ? Number.parseInt(match[1], 10)
+        : EMAIL_RESEND_COOLDOWN_SECONDS;
+    if (!Number.isFinite(rawCooldown) || rawCooldown < 0) {
+        return EMAIL_RESEND_COOLDOWN_SECONDS;
+    }
+    return rawCooldown;
+}
+
 export default function LoginPage() {
     const router = useRouter();
-    const [email, setEmail] = useState("");
+    const [identifier, setIdentifier] = useState("");
     const [password, setPassword] = useState("");
+    const [emailCode, setEmailCode] = useState("");
+    const [totpCode, setTotpCode] = useState("");
+    const [authStep, setAuthStep] = useState<"credentials" | "emailVerification" | "mfa">("credentials");
+    const [resendCooldownSeconds, setResendCooldownSeconds] = useState(0);
     const [error, setError] = useState("");
+    const [message, setMessage] = useState("");
     const [loading, setLoading] = useState(false);
+
+    useEffect(() => {
+        if (resendCooldownSeconds <= 0) return;
+        const timeout = setTimeout(() => {
+            setResendCooldownSeconds((current) => Math.max(0, current - 1));
+        }, 1000);
+        return () => clearTimeout(timeout);
+    }, [resendCooldownSeconds]);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setLoading(true);
         setError("");
+        setMessage("");
 
         const res = await signIn("credentials", {
-            email,
+            identifier,
             password,
+            ...(authStep === "emailVerification" ? { emailCode } : {}),
+            ...(authStep === "mfa" ? { totpCode } : {}),
             redirect: false,
         });
 
         if (res?.error) {
-            setError("Invalid credentials");
+            const emailVerificationCooldown = parseEmailVerificationRequiredError(res.error);
+            if (emailVerificationCooldown !== null) {
+                setAuthStep("emailVerification");
+                setResendCooldownSeconds(emailVerificationCooldown);
+                if (emailVerificationCooldown >= EMAIL_RESEND_COOLDOWN_SECONDS) {
+                    setMessage("Enter the 6-digit code sent to your email to continue.");
+                } else {
+                    setMessage(`Use the latest code from your email. You can resend in ${emailVerificationCooldown}s.`);
+                }
+                setLoading(false);
+                return;
+            }
+
+            if (res.error === "EMAIL_VERIFICATION_INVALID") {
+                setAuthStep("emailVerification");
+                setError("Invalid or expired email verification code.");
+                setLoading(false);
+                return;
+            }
+
+            if (res.error === "MFA_REQUIRED") {
+                setAuthStep("mfa");
+                setMessage("Password accepted. Enter your authenticator code to finish logging in.");
+                setLoading(false);
+                return;
+            }
+
+            if (res.error === "MFA_INVALID") {
+                setAuthStep("mfa");
+                setError("Invalid authenticator code.");
+                setLoading(false);
+                return;
+            }
+
+            const looksLikePhone = /^\+?[0-9()\-\s.]{7,}$/.test(identifier) && !identifier.includes("@");
+            if (looksLikePhone) {
+                setError("Phone login is no longer supported. Use email or username.");
+            } else {
+                setError("Invalid email/username or password.");
+            }
             setLoading(false);
         } else {
             router.push("/vault");
             router.refresh();
         }
+    };
+
+    const handleResendEmailCode = async () => {
+        if (resendCooldownSeconds > 0) return;
+
+        setLoading(true);
+        setError("");
+        setMessage("");
+
+        const res = await signIn("credentials", {
+            identifier,
+            password,
+            redirect: false,
+        });
+
+        if (res?.error) {
+            const emailVerificationCooldown = parseEmailVerificationRequiredError(res.error);
+            if (emailVerificationCooldown !== null) {
+                setResendCooldownSeconds(emailVerificationCooldown);
+                if (emailVerificationCooldown >= EMAIL_RESEND_COOLDOWN_SECONDS) {
+                    setMessage("Verification code sent. Check your email.");
+                } else {
+                    setMessage(`Please wait ${emailVerificationCooldown}s before requesting another code.`);
+                }
+                setLoading(false);
+                return;
+            }
+
+            setError("Could not resend verification code. Re-enter your credentials.");
+            setAuthStep("credentials");
+            setResendCooldownSeconds(0);
+        }
+        setLoading(false);
     };
 
     return (
@@ -52,7 +155,11 @@ export default function LoginPage() {
                         <Film className="w-6 h-6 text-accent" />
                         <span>Log In</span>
                     </div>
-                    <p className="text-sm text-foreground/60">Enter the darkroom</p>
+                    <p className="text-sm text-foreground/60">
+                        {authStep === "credentials" && "Enter the darkroom"}
+                        {authStep === "emailVerification" && "Verify your email to continue"}
+                        {authStep === "mfa" && "Complete two-factor authentication"}
+                    </p>
                 </div>
 
                 {error && (
@@ -60,31 +167,101 @@ export default function LoginPage() {
                         {error}
                     </div>
                 )}
+                {message && (
+                    <div className="mb-4 p-3 rounded bg-green-500/10 border border-green-500/20 text-green-400 text-sm text-center">
+                        {message}
+                    </div>
+                )}
 
                 <form onSubmit={handleSubmit} className="space-y-4">
-                    <div className="space-y-2">
-                        <label className="text-sm font-medium text-foreground/80">Email</label>
-                        <Input
-                            type="email"
-                            required
-                            value={email}
-                            onChange={(e) => setEmail(e.target.value)}
-                            placeholder="you@example.com"
-                        />
-                    </div>
-                    <div className="space-y-2">
-                        <label className="text-sm font-medium text-foreground/80">Password</label>
-                        <PasswordInput
-                            required
-                            value={password}
-                            onChange={(e) => setPassword(e.target.value)}
-                            placeholder="••••••••"
-                        />
-                    </div>
+                    {authStep === "credentials" ? (
+                        <>
+                            <div className="space-y-2">
+                                <label className="text-sm font-medium text-foreground/80">Email or Username</label>
+                                <Input
+                                    type="text"
+                                    required
+                                    value={identifier}
+                                    onChange={(e) => setIdentifier(e.target.value)}
+                                    placeholder="you@example.com or username"
+                                />
+                            </div>
+                            <div className="space-y-2">
+                                <label className="text-sm font-medium text-foreground/80">Password</label>
+                                <PasswordInput
+                                    required
+                                    value={password}
+                                    onChange={(e) => setPassword(e.target.value)}
+                                    placeholder="••••••••"
+                                />
+                            </div>
+                        </>
+                    ) : authStep === "emailVerification" ? (
+                        <>
+                            <div className="space-y-2">
+                                <label className="text-sm font-medium text-foreground/80">Email Verification Code</label>
+                                <Input
+                                    type="text"
+                                    inputMode="numeric"
+                                    required
+                                    value={emailCode}
+                                    onChange={(e) => setEmailCode(e.target.value)}
+                                    placeholder="6-digit code"
+                                    maxLength={6}
+                                />
+                            </div>
+                            <Button
+                                type="button"
+                                variant="outline"
+                                className="w-full"
+                                disabled={loading || resendCooldownSeconds > 0}
+                                onClick={handleResendEmailCode}
+                            >
+                                {resendCooldownSeconds > 0
+                                    ? `Resend in ${resendCooldownSeconds}s`
+                                    : "Resend Code"}
+                            </Button>
+                        </>
+                    ) : (
+                        <>
+                            <div className="space-y-2">
+                                <label className="text-sm font-medium text-foreground/80">Authenticator Code</label>
+                                <Input
+                                    type="text"
+                                    inputMode="numeric"
+                                    required
+                                    value={totpCode}
+                                    onChange={(e) => setTotpCode(e.target.value)}
+                                    placeholder="6-digit code"
+                                    maxLength={6}
+                                />
+                            </div>
+                            <Button
+                                type="button"
+                                variant="outline"
+                                className="w-full"
+                                disabled={loading}
+                                onClick={() => {
+                                    setAuthStep("credentials");
+                                    setTotpCode("");
+                                    setError("");
+                                    setMessage("");
+                                }}
+                            >
+                                Back
+                            </Button>
+                        </>
+                    )}
                     <Button type="submit" variant="safelight" className="w-full" disabled={loading}>
-                        {loading ? "Authenticating..." : "Log In"}
+                        {loading ? "Authenticating..." : authStep === "credentials" ? "Log In" : "Verify Code"}
                     </Button>
                 </form>
+
+                <div className="mt-4 text-center text-sm">
+                    <Link href="/forgot-password" className="text-foreground/60 hover:text-accent transition-colors underline underline-offset-4">
+                        Forgot password?
+                    </Link>
+                </div>
 
                 <div className="mt-6 text-center text-sm text-foreground/60">
                     Not in the vault yet?{" "}

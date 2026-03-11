@@ -16,10 +16,23 @@ export async function generateMetadata({ params }: { params: Promise<{ username:
                 { id: slug }
             ]
         },
-        include: {
-            user: true,
-            photos: { take: 1, orderBy: { orderIndex: "asc" } }
-        }
+        select: {
+            title: true,
+            description: true,
+            coverImage: true,
+            user: {
+                select: {
+                    username: true,
+                },
+            },
+            photos: {
+                take: 1,
+                orderBy: { orderIndex: "asc" },
+                select: {
+                    url: true,
+                },
+            },
+        },
     });
 
     if (!roll || roll.user.username !== username) {
@@ -64,10 +77,23 @@ export default async function PublicRollView({ params }: { params: Promise<{ use
                 { id: slug }
             ]
         },
-        include: {
-            user: true,
-            photos: { orderBy: [{ orderIndex: "asc" }, { createdAt: "asc" }] }
-        }
+        select: {
+            title: true,
+            description: true,
+            user: {
+                select: {
+                    username: true,
+                },
+            },
+            photos: {
+                orderBy: [{ orderIndex: "asc" }, { createdAt: "asc" }],
+                select: {
+                    id: true,
+                    url: true,
+                    caption: true,
+                },
+            },
+        },
     });
 
     if (!roll || roll.user.username !== username) {

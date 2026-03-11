@@ -16,7 +16,12 @@ export default async function RollPage({ params }: { params: Promise<{ id: strin
         include: {
             photos: { orderBy: { orderIndex: "asc" } },
             archives: true,
-            user: { select: { username: true } }
+            user: {
+                select: {
+                    username: true,
+                    emailVerified: true,
+                }
+            }
         },
     });
 

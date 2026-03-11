@@ -36,14 +36,14 @@ export default function RegisterPage() {
                 body: JSON.stringify({ email, username, password }),
             });
 
+            const data = await res.json();
             if (!res.ok) {
-                const data = await res.json();
                 throw new Error(data.message || "Registration failed");
             }
 
             // Automatically sign in after registering
             const signInRes = await signIn("credentials", {
-                email,
+                identifier: email,
                 password,
                 redirect: false,
             });
@@ -52,10 +52,11 @@ export default function RegisterPage() {
                 throw new Error("Login failed after registration");
             }
 
-            router.push("/vault");
+            router.push("/vault/profile");
             router.refresh();
-        } catch (err: any) {
-            setError(err.message);
+        } catch (err: unknown) {
+            const errorMessage = err instanceof Error ? err.message : "Registration failed";
+            setError(errorMessage);
             setLoading(false);
         }
     };
@@ -97,10 +98,13 @@ export default function RegisterPage() {
                         />
                     </div>
                     <div className="space-y-2">
-                        <label className="text-sm font-medium text-foreground/80">Username</label>
+                        <label className="text-sm font-medium text-foreground/80">Username (3-15 characters, no spaces)</label>
                         <Input
                             type="text"
                             required
+                            minLength={3}
+                            maxLength={15}
+                            pattern="^[a-zA-Z0-9._]{3,15}$"
                             value={username}
                             onChange={(e) => setUsername(e.target.value)}
                             placeholder="filmlover99"
@@ -127,6 +131,9 @@ export default function RegisterPage() {
                     <Button type="submit" variant="safelight" className="w-full" disabled={loading}>
                         {loading ? "Creating..." : "Sign Up"}
                     </Button>
+                    <p className="text-xs text-foreground/50 text-center">
+                        Email verification is required before image uploads.
+                    </p>
                 </form>
 
                 <div className="mt-6 text-center text-sm text-foreground/60">

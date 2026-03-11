@@ -8,6 +8,7 @@ export async function PATCH(req: Request) {
         const session = await getServerSession(authOptions);
         // @ts-ignore
         if (!session?.user?.id) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+        if (!session.user.emailVerified) return NextResponse.json({ error: "Email verification required." }, { status: 403 });
 
         const { id, caption, orderIndex } = await req.json();
 
@@ -44,6 +45,7 @@ export async function DELETE(req: Request) {
         const session = await getServerSession(authOptions);
         // @ts-ignore
         if (!session?.user?.id) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+        if (!session.user.emailVerified) return NextResponse.json({ error: "Email verification required." }, { status: 403 });
 
         const url = new URL(req.url);
         const id = url.searchParams.get("id");

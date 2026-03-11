@@ -9,6 +9,9 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
         if (!(session?.user as any)?.id) {
             return new NextResponse("Unauthorized", { status: 401 });
         }
+        if ((session?.user as any)?.emailVerified === false) {
+            return new NextResponse("Email verification required", { status: 403 });
+        }
 
         const { id } = await params;
         const { title, description, showOnProfile } = await req.json();
@@ -35,6 +38,9 @@ export async function DELETE(req: Request, { params }: { params: Promise<{ id: s
         const session = await getServerSession(authOptions);
         if (!(session?.user as any)?.id) {
             return new NextResponse("Unauthorized", { status: 401 });
+        }
+        if ((session?.user as any)?.emailVerified === false) {
+            return new NextResponse("Email verification required", { status: 403 });
         }
 
         const { id } = await params;

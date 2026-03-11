@@ -78,6 +78,11 @@ export async function generateMetadata({ params }: { params: Promise<{ username:
 
     const user: any = await prisma.user.findUnique({
         where: { username },
+        select: {
+            username: true,
+            bio: true,
+            avatar: true,
+        },
     });
 
     if (!user) {
@@ -116,32 +121,53 @@ export default async function PublicProfile({ params }: { params: Promise<{ user
 
     const user: any = await prisma.user.findUnique({
         where: { username },
-        include: {
-            // @ts-ignore
+        select: {
+            id: true,
+            username: true,
+            bio: true,
+            avatar: true,
             archives: {
                 where: { showOnProfile: true },
                 orderBy: { createdAt: "desc" },
-                include: {
+                select: {
+                    id: true,
+                    title: true,
+                    description: true,
                     rolls: {
                         where: { showOnProfile: true, pinOrder: null },
                         orderBy: { createdAt: "desc" },
-                        include: {
+                        select: {
+                            id: true,
+                            slug: true,
+                            title: true,
+                            coverImage: true,
                             _count: { select: { photos: true } },
-                            photos: { take: 1, orderBy: { orderIndex: "asc" } }
-                        }
-                    }
-                }
+                            photos: {
+                                take: 1,
+                                orderBy: { orderIndex: "asc" },
+                                select: { id: true, url: true },
+                            },
+                        },
+                    },
+                },
             },
             rolls: {
-                // @ts-ignore
                 where: { archives: { none: {} }, showOnProfile: true, pinOrder: null },
                 orderBy: { createdAt: "desc" },
-                include: {
+                select: {
+                    id: true,
+                    slug: true,
+                    title: true,
+                    coverImage: true,
                     _count: { select: { photos: true } },
-                    photos: { take: 1, orderBy: { orderIndex: "asc" } }
-                }
-            }
-        }
+                    photos: {
+                        take: 1,
+                        orderBy: { orderIndex: "asc" },
+                        select: { id: true, url: true },
+                    },
+                },
+            },
+        },
     });
 
     if (!user) {
