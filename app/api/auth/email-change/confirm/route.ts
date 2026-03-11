@@ -71,7 +71,6 @@ export async function GET(req: Request) {
         data: {
           email: record.newEmail,
           emailVerified: true,
-          lastVerifiedEmail: record.newEmail,
         },
       }),
     ]);

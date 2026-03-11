@@ -46,10 +46,18 @@ export default function LoginPage() {
 
     useEffect(() => {
         if (typeof window === "undefined") return;
-        const emailChangeStatus = new URLSearchParams(window.location.search).get("emailChange");
-        if (!emailChangeStatus) return;
+        const params = new URLSearchParams(window.location.search);
+        const emailChangeStatus = params.get("emailChange");
+        const registered = params.get("registered");
+        const initialIdentifier = params.get("identifier");
 
-        if (emailChangeStatus === "success") {
+        if (initialIdentifier) {
+            setIdentifier(initialIdentifier);
+        }
+
+        if (registered === "1") {
+            setMessage("Account created. Log in and complete email verification to continue.");
+        } else if (emailChangeStatus === "success") {
             setMessage("Email updated successfully. Log in with your new email or your username.");
         } else if (emailChangeStatus === "expired") {
             setError("That email confirmation link expired. Request the email change again from profile settings.");
@@ -88,13 +96,6 @@ export default function LoginPage() {
                 return;
             }
 
-            if (res.error === "EMAIL_REVERT_UNAVAILABLE") {
-                setAuthStep("emailVerification");
-                setError("Previous verified email is not available for automatic restore.");
-                setLoading(false);
-                return;
-            }
-
             if (res.error === "EMAIL_VERIFICATION_INVALID") {
                 setAuthStep("emailVerification");
                 setError("Invalid or expired email verification code.");
@@ -116,12 +117,7 @@ export default function LoginPage() {
                 return;
             }
 
-            const looksLikePhone = /^\+?[0-9()\-\s.]{7,}$/.test(identifier) && !identifier.includes("@");
-            if (looksLikePhone) {
-                setError("Phone login is no longer supported. Use email or username.");
-            } else {
-                setError("Invalid email/username or password.");
-            }
+            setError("Invalid email/username or password.");
             setLoading(false);
         } else {
             router.push("/vault");
@@ -160,51 +156,6 @@ export default function LoginPage() {
             setResendCooldownSeconds(0);
         }
         setLoading(false);
-    };
-
-    const handleRevertToPreviousEmail = async () => {
-        setLoading(true);
-        setError("");
-        setMessage("");
-
-        const res = await signIn("credentials", {
-            identifier,
-            password,
-            revertEmail: "1",
-            redirect: false,
-        });
-
-        if (res?.error) {
-            if (res.error === "MFA_REQUIRED") {
-                setAuthStep("mfa");
-                setMessage("Previous email restored. Enter your authenticator code to finish logging in.");
-                setLoading(false);
-                return;
-            }
-
-            if (res.error === "MFA_INVALID") {
-                setAuthStep("mfa");
-                setError("Invalid authenticator code.");
-                setLoading(false);
-                return;
-            }
-
-            if (res.error === "EMAIL_REVERT_UNAVAILABLE") {
-                setAuthStep("emailVerification");
-                setError("Previous verified email is not available for automatic restore.");
-                setLoading(false);
-                return;
-            }
-
-            setError("Could not restore previous email. Go back and re-enter your credentials.");
-            setAuthStep("credentials");
-            setResendCooldownSeconds(0);
-            setLoading(false);
-            return;
-        }
-
-        router.push("/vault");
-        router.refresh();
     };
 
     return (
@@ -289,14 +240,6 @@ export default function LoginPage() {
                                     ? `Resend in ${resendCooldownSeconds}s`
                                     : "Resend Code"}
                             </Button>
-                            <button
-                                type="button"
-                                onClick={handleRevertToPreviousEmail}
-                                disabled={loading}
-                                className="w-full text-xs underline underline-offset-4 text-foreground/60 hover:text-foreground disabled:opacity-50"
-                            >
-                                Wrong email? Restore previous verified email
-                            </button>
                         </>
                     ) : (
                         <>

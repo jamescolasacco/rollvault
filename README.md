@@ -10,13 +10,13 @@ RollVault is a beautiful, minimalist digital archive for analog photographers. I
 *   **Drag & Drop Uploading:** Easily batch upload your high-res film scans into a roll.
 *   **Cover Customization:** Set custom cover images or let RollVault automatically select the first frame.
 *   **Live Vault metrics:** Keep track of your total frames, rolls, and archives.
-*   **Account Security:** Email verification, optional authenticator app MFA (TOTP), password reset, and login via email/username.
+*   **Account Security:** Email verification gate on login, optional authenticator app MFA (TOTP), password reset, login via email/username, pending email-change confirmation flow, and automatic purge of unverified accounts older than 24 hours.
 
 ## 🛠 Tech Stack
 
 RollVault is built with modern, high-performance web technologies:
 
-*   **Framework:** [Next.js 15](https://nextjs.org/) (App Router)
+*   **Framework:** [Next.js 16](https://nextjs.org/) (App Router)
 *   **Language:** TypeScript
 *   **Styling:** Tailwind CSS + custom CSS animations
 *   **Database:** SQLite (Default, local-first)
@@ -50,7 +50,7 @@ RollVault is designed to be self-hosted. By default, it uses a local SQLite data
     ```env
     DATABASE_URL="file:./dev.db"
     NEXTAUTH_SECRET="generate-a-random-32-char-string-here"
-    NEXTAUTH_URL="http://localhost:3000"
+    NEXTAUTH_URL="http://localhost:3012"
     APP_NAME="RollVault"
     APP_BASE_URL="http://localhost:3012"
 
@@ -73,7 +73,7 @@ RollVault is designed to be self-hosted. By default, it uses a local SQLite data
     ```
 
 6.  **Create your account**
-    Open `http://localhost:3000` in your browser, hit the register button, and create your first photographer account!
+    Open `http://localhost:3012` in your browser, hit the register button, and create your first photographer account!
 
 ## 🔐 Privacy & Storage
 
@@ -96,14 +96,18 @@ To make verification and password reset delivery reliable in production:
 2. **App URL**
    - Set `APP_BASE_URL` to your public app URL so password reset links are valid in email.
 
-3. **Production checklist**
+3. **Unverified account expiration**
+   - Accounts that are still unverified after 24 hours are deleted automatically during authentication flows (register/login checks).
+
+4. **Production checklist**
    - `NODE_ENV=production`
-   - All email env vars are set
+   - All email env vars are set (`RESEND_API_KEY`, `EMAIL_FROM`, optional `EMAIL_REPLY_TO`)
    - Domain DNS fully propagated
    - Test before launch:
      - registration (email verification)
      - profile resend verification
      - forgot password reset link
+     - email change confirmation link
      - login with optional authenticator app MFA
 
 ## 📄 License

@@ -11,10 +11,13 @@ import {
 } from "@/lib/account";
 import { issueEmailVerificationCode, VerificationCooldownError } from "@/lib/accountSecurity";
 import { sendEmailVerificationCode } from "@/lib/notificationDelivery";
+import { pruneExpiredUnverifiedAccounts } from "@/lib/accountLifecycle";
 
 export async function POST(req: Request) {
     try {
         const { email, password, username } = await req.json();
+
+        await pruneExpiredUnverifiedAccounts();
 
         if (!email || !password || !username) {
             return NextResponse.json({ message: "Missing fields" }, { status: 400 });

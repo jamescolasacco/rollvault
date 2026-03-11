@@ -17,6 +17,7 @@ import {
 } from "./accountSecurity";
 import { sendEmailVerificationCode } from "./notificationDelivery";
 import { verifyTotpCode } from "./totp";
+import { pruneExpiredUnverifiedAccounts } from "./accountLifecycle";
 
 const MAX_FAILED_SIGN_INS = 5;
 const LOCKOUT_MINUTES = 15;
@@ -33,11 +34,11 @@ export const authOptions: NextAuthOptions = {
                 identifier: { label: "Email / Username", type: "text" },
                 password: { label: "Password", type: "password" },
                 emailCode: { label: "Email Verification Code", type: "text" },
-                revertEmail: { label: "Revert Email", type: "text" },
                 totpCode: { label: "Authenticator Code", type: "text" },
             },
             async authorize(credentials) {
                 if (!credentials?.identifier || !credentials?.password) return null;
+                await pruneExpiredUnverifiedAccounts();
 
                 const rawIdentifier = credentials.identifier.trim();
                 const candidates = parseSignInIdentifier(credentials.identifier);
@@ -55,14 +56,6 @@ export const authOptions: NextAuthOptions = {
                 });
 
                 if (!user) return null;
-
-                if (user.emailVerified && !user.lastVerifiedEmail) {
-                    await prisma.user.update({
-                        where: { id: user.id },
-                        data: { lastVerifiedEmail: user.email },
-                    });
-                    user.lastVerifiedEmail = user.email;
-                }
 
                 const now = new Date();
                 if (user.lockoutUntil && user.lockoutUntil > now) {
@@ -92,119 +85,80 @@ export const authOptions: NextAuthOptions = {
                 }
 
                 if (!user.emailVerified) {
-                    const wantsEmailRevert = credentials.revertEmail === "1";
-                    if (wantsEmailRevert) {
-                        if (!user.lastVerifiedEmail || user.lastVerifiedEmail === user.email) {
-                            throw new Error("EMAIL_REVERT_UNAVAILABLE");
-                        }
+                    const emailCode = credentials.emailCode?.trim();
 
-                        const existingUserWithEmail = await prisma.user.findFirst({
-                            where: {
-                                email: user.lastVerifiedEmail,
-                                id: { not: user.id },
-                            },
-                            select: { id: true },
-                        });
-
-                        if (existingUserWithEmail) {
-                            throw new Error("EMAIL_REVERT_UNAVAILABLE");
-                        }
-
-                        await prisma.$transaction([
-                            prisma.verificationCode.updateMany({
-                                where: {
-                                    userId: user.id,
-                                    consumedAt: null,
-                                },
-                                data: { consumedAt: new Date() },
-                            }),
-                            prisma.user.update({
-                                where: { id: user.id },
-                                data: {
-                                    email: user.lastVerifiedEmail,
-                                    emailVerified: true,
-                                },
-                            }),
-                        ]);
-
-                        user.email = user.lastVerifiedEmail;
-                        user.emailVerified = true;
-                    } else {
-                        const emailCode = credentials.emailCode?.trim();
-
-                        if (!emailCode) {
-                            let retryAfterSeconds = VERIFICATION_CODE_COOLDOWN_SECONDS;
-                            try {
-                                const verification = await issueEmailVerificationCode(user.id);
-                                await sendEmailVerificationCode({
-                                    toEmail: user.email,
-                                    code: verification.code,
-                                });
-                            } catch (error) {
-                                if (error instanceof VerificationCooldownError) {
-                                    retryAfterSeconds = error.retryAfterSeconds;
-                                } else {
-                                    console.error("Login email verification send failed:", error);
-                                    retryAfterSeconds = await getVerificationCooldownRemainingSeconds(
-                                        user.id
-                                    );
-                                }
+                    if (!emailCode) {
+                        let retryAfterSeconds = VERIFICATION_CODE_COOLDOWN_SECONDS;
+                        try {
+                            const verification = await issueEmailVerificationCode(user.id);
+                            await sendEmailVerificationCode({
+                                toEmail: user.email,
+                                code: verification.code,
+                            });
+                        } catch (error) {
+                            if (error instanceof VerificationCooldownError) {
+                                retryAfterSeconds = error.retryAfterSeconds;
+                            } else {
+                                console.error("Login email verification send failed:", error);
+                                retryAfterSeconds = await getVerificationCooldownRemainingSeconds(
+                                    user.id
+                                );
                             }
-                            throw new Error(`EMAIL_VERIFICATION_REQUIRED:${retryAfterSeconds}`);
                         }
+                        throw new Error(`EMAIL_VERIFICATION_REQUIRED:${retryAfterSeconds}`);
+                    }
 
-                        if (!new RegExp(`^\\d{${VERIFICATION_CODE_LENGTH}}$`).test(emailCode)) {
-                            await registerFailedAttempt();
-                            throw new Error("EMAIL_VERIFICATION_INVALID");
-                        }
+                    if (!new RegExp(`^\\d{${VERIFICATION_CODE_LENGTH}}$`).test(emailCode)) {
+                        await registerFailedAttempt();
+                        throw new Error("EMAIL_VERIFICATION_INVALID");
+                    }
 
-                        const latestVerification = await prisma.verificationCode.findFirst({
-                            where: {
-                                userId: user.id,
-                                consumedAt: null,
-                            },
-                            orderBy: { createdAt: "desc" },
-                        });
+                    const latestVerification = await prisma.verificationCode.findFirst({
+                        where: {
+                            userId: user.id,
+                            consumedAt: null,
+                        },
+                        orderBy: { createdAt: "desc" },
+                    });
 
-                        if (!latestVerification || latestVerification.expiresAt <= now) {
-                            if (latestVerification && latestVerification.consumedAt === null) {
-                                await prisma.verificationCode.update({
-                                    where: { id: latestVerification.id },
-                                    data: { consumedAt: new Date() },
-                                });
-                            }
-                            await registerFailedAttempt();
-                            throw new Error("EMAIL_VERIFICATION_INVALID");
-                        }
-
-                        const emailCodeMatches = hashSecret(emailCode) === latestVerification.codeHash;
-                        if (!emailCodeMatches) {
-                            const nextAttempts = latestVerification.attempts + 1;
+                    if (!latestVerification || latestVerification.expiresAt <= now) {
+                        if (latestVerification && latestVerification.consumedAt === null) {
                             await prisma.verificationCode.update({
                                 where: { id: latestVerification.id },
-                                data: {
-                                    attempts: nextAttempts,
-                                    consumedAt:
-                                        nextAttempts >= VERIFICATION_MAX_ATTEMPTS ? new Date() : null,
-                                },
+                                data: { consumedAt: new Date() },
                             });
-                            await registerFailedAttempt();
-                            throw new Error("EMAIL_VERIFICATION_INVALID");
                         }
-
-                        await prisma.$transaction([
-                            prisma.verificationCode.update({
-                                where: { id: latestVerification.id },
-                                data: { consumedAt: new Date(), attempts: latestVerification.attempts + 1 },
-                            }),
-                            prisma.user.update({
-                                where: { id: user.id },
-                                data: { emailVerified: true, lastVerifiedEmail: user.email },
-                            }),
-                        ]);
-
-                        user.emailVerified = true;
+                        await registerFailedAttempt();
+                        throw new Error("EMAIL_VERIFICATION_INVALID");
                     }
+
+                    const emailCodeMatches = hashSecret(emailCode) === latestVerification.codeHash;
+                    if (!emailCodeMatches) {
+                        const nextAttempts = latestVerification.attempts + 1;
+                        await prisma.verificationCode.update({
+                            where: { id: latestVerification.id },
+                            data: {
+                                attempts: nextAttempts,
+                                consumedAt:
+                                    nextAttempts >= VERIFICATION_MAX_ATTEMPTS ? new Date() : null,
+                            },
+                        });
+                        await registerFailedAttempt();
+                        throw new Error("EMAIL_VERIFICATION_INVALID");
+                    }
+
+                    await prisma.$transaction([
+                        prisma.verificationCode.update({
+                            where: { id: latestVerification.id },
+                            data: { consumedAt: new Date(), attempts: latestVerification.attempts + 1 },
+                        }),
+                        prisma.user.update({
+                            where: { id: user.id },
+                            data: { emailVerified: true },
+                        }),
+                    ]);
+
+                    user.emailVerified = true;
                 }
 
                 if (user.totpEnabled) {

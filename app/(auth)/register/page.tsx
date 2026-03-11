@@ -7,7 +7,6 @@ import { Button } from "@/components/Button";
 import { Input } from "@/components/Input";
 import { PasswordInput } from "@/components/PasswordInput";
 import { Film } from "lucide-react";
-import { signIn } from "next-auth/react";
 
 export default function RegisterPage() {
     const router = useRouter();
@@ -41,19 +40,11 @@ export default function RegisterPage() {
                 throw new Error(data.message || "Registration failed");
             }
 
-            // Automatically sign in after registering
-            const signInRes = await signIn("credentials", {
-                identifier: email,
-                password,
-                redirect: false,
+            const loginParams = new URLSearchParams({
+                registered: "1",
+                identifier: email.trim(),
             });
-
-            if (signInRes?.error) {
-                throw new Error("Login failed after registration");
-            }
-
-            router.push("/vault/profile");
-            router.refresh();
+            router.push(`/login?${loginParams.toString()}`);
         } catch (err: unknown) {
             const errorMessage = err instanceof Error ? err.message : "Registration failed";
             setError(errorMessage);
