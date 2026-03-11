@@ -3,7 +3,9 @@ import CredentialsProvider from "next-auth/providers/credentials";
 import { prisma } from "./prisma";
 import bcrypt from "bcryptjs";
 import {
+    isValidEmail,
     hasAtLeastOneIdentifierCandidate,
+    normalizeEmail,
     parseSignInIdentifier,
 } from "./account";
 import {
@@ -33,6 +35,7 @@ export const authOptions: NextAuthOptions = {
                 identifier: { label: "Email / Username", type: "text" },
                 password: { label: "Password", type: "password" },
                 emailCode: { label: "Email Verification Code", type: "text" },
+                recoveryEmail: { label: "Recovery Email", type: "email" },
                 totpCode: { label: "Authenticator Code", type: "text" },
             },
             async authorize(credentials) {
@@ -83,6 +86,57 @@ export const authOptions: NextAuthOptions = {
                 }
 
                 if (!user.emailVerified) {
+                    const recoveryEmail = credentials.recoveryEmail?.trim();
+                    if (recoveryEmail) {
+                        const normalizedRecoveryEmail = normalizeEmail(recoveryEmail);
+                        if (!isValidEmail(normalizedRecoveryEmail)) {
+                            throw new Error("EMAIL_RECOVERY_INVALID");
+                        }
+
+                        if (normalizedRecoveryEmail !== user.email) {
+                            const existingUserWithEmail = await prisma.user.findFirst({
+                                where: {
+                                    email: normalizedRecoveryEmail,
+                                    id: { not: user.id },
+                                },
+                                select: { id: true },
+                            });
+
+                            if (existingUserWithEmail) {
+                                throw new Error("EMAIL_RECOVERY_TAKEN");
+                            }
+
+                            await prisma.user.update({
+                                where: { id: user.id },
+                                data: {
+                                    email: normalizedRecoveryEmail,
+                                    emailVerified: false,
+                                },
+                            });
+                            user.email = normalizedRecoveryEmail;
+                        }
+
+                        let retryAfterSeconds = VERIFICATION_CODE_COOLDOWN_SECONDS;
+                        try {
+                            const verification = await issueEmailVerificationCode(user.id);
+                            await sendEmailVerificationCode({
+                                toEmail: user.email,
+                                code: verification.code,
+                            });
+                        } catch (error) {
+                            if (error instanceof VerificationCooldownError) {
+                                retryAfterSeconds = error.retryAfterSeconds;
+                            } else {
+                                console.error("Login email recovery send failed:", error);
+                                retryAfterSeconds = await getVerificationCooldownRemainingSeconds(
+                                    user.id
+                                );
+                            }
+                        }
+
+                        throw new Error(`EMAIL_RECOVERY_SENT:${retryAfterSeconds}`);
+                    }
+
                     const emailCode = credentials.emailCode?.trim();
 
                     if (!emailCode) {
