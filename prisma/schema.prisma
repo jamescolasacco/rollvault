@@ -25,6 +25,7 @@ model User {
   archives            Archive[]
   verificationCodes   VerificationCode[]
   passwordResetTokens PasswordResetToken[]
+  emailChangeTokens   EmailChangeToken[]
   createdAt           DateTime             @default(now())
   updatedAt           DateTime             @updatedAt
 }
@@ -91,4 +92,18 @@ model PasswordResetToken {
   createdAt DateTime @default(now())
 
   @@index([userId, createdAt])
+}
+
+model EmailChangeToken {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  newEmail  String
+  tokenHash String   @unique
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime @default(now())
+
+  @@index([userId, createdAt])
+  @@index([newEmail, createdAt])
 }

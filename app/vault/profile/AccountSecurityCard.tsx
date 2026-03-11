@@ -3,7 +3,6 @@
 import { useState } from "react";
 import { Button } from "@/components/Button";
 import { Input } from "@/components/Input";
-import { signOut } from "next-auth/react";
 
 interface AccountSecurityCardProps {
   user: {
@@ -59,13 +58,11 @@ export default function AccountSecurityCard({ user }: AccountSecurityCardProps) 
       setEmailVerified(Boolean(data.user.emailVerified));
       setTotpEnabled(Boolean(data.user.totpEnabled));
 
-      if (data.requiresReauth) {
-        setMessage("Email changed. Re-verify your new email to regain access.");
-        await signOut({ callbackUrl: "/login" });
-        return;
+      if (data.pendingEmailChange) {
+        setMessage(`Confirmation sent to ${data.pendingEmailChange}. Your current email remains active until confirmed.`);
+      } else {
+        setMessage("Email updated.");
       }
-
-      setMessage("Email updated.");
 
       if (Array.isArray(data.deliveryWarnings) && data.deliveryWarnings.length > 0) {
         setError(data.deliveryWarnings.join(" "));

@@ -8,10 +8,14 @@ import {
     normalizeEmail,
 } from "@/lib/account";
 import {
-    issueEmailVerificationCode,
-    VerificationCooldownError,
+    EMAIL_CHANGE_TOKEN_TTL_MINUTES,
+    generatePasswordResetToken,
+    hashSecret,
 } from "@/lib/accountSecurity";
-import { sendEmailVerificationCode } from "@/lib/notificationDelivery";
+import {
+    sendEmailChangeConfirmationEmail,
+    sendEmailChangeNotice,
+} from "@/lib/notificationDelivery";
 
 export async function PATCH(req: Request) {
     try {
@@ -43,7 +47,7 @@ export async function PATCH(req: Request) {
         if (bio !== undefined) dataToUpdate.bio = bio;
         if (avatar !== undefined) dataToUpdate.avatar = avatar;
 
-        let shouldIssueEmailCode = false;
+        let requestedEmailChange: string | null = null;
 
         if (email !== undefined) {
             if (typeof email !== "string") {
@@ -71,13 +75,11 @@ export async function PATCH(req: Request) {
                     );
                 }
 
-                dataToUpdate.email = normalizedEmail;
-                dataToUpdate.emailVerified = false;
-                shouldIssueEmailCode = true;
+                requestedEmailChange = normalizedEmail;
             }
         }
 
-        if (Object.keys(dataToUpdate).length === 0) {
+        if (Object.keys(dataToUpdate).length === 0 && !requestedEmailChange) {
             const unchangedUser = await prisma.user.findUnique({
                 where: { id: session.user.id },
                 select: {
@@ -93,42 +95,95 @@ export async function PATCH(req: Request) {
             return NextResponse.json({ success: true, user: unchangedUser });
         }
 
-        const updated = await prisma.user.update({
-            where: { id: session.user.id },
-            data: dataToUpdate,
-            select: {
-                id: true,
-                username: true,
-                bio: true,
-                avatar: true,
-                email: true,
-                emailVerified: true,
-                totpEnabled: true,
-            },
-        });
+        const userSelect = {
+            id: true,
+            username: true,
+            bio: true,
+            avatar: true,
+            email: true,
+            emailVerified: true,
+            totpEnabled: true,
+        } as const;
+
+        const updated =
+            Object.keys(dataToUpdate).length === 0
+                ? await prisma.user.findUnique({
+                    where: { id: session.user.id },
+                    select: userSelect,
+                })
+                : await prisma.user.update({
+                    where: { id: session.user.id },
+                    data: dataToUpdate,
+                    select: userSelect,
+                });
+
+        if (!updated) {
+            return NextResponse.json({ error: "User not found" }, { status: 404 });
+        }
 
         const deliveryWarnings: string[] = [];
 
-        if (shouldIssueEmailCode) {
+        if (requestedEmailChange) {
+            const token = generatePasswordResetToken();
+            const tokenHash = hashSecret(token);
+            const expiresAt = new Date(
+                Date.now() + EMAIL_CHANGE_TOKEN_TTL_MINUTES * 60 * 1000
+            );
+            const origin =
+                process.env.APP_BASE_URL ||
+                process.env.NEXTAUTH_URL ||
+                new URL(req.url).origin;
+            const confirmationLink = `${origin}/api/auth/email-change/confirm?token=${encodeURIComponent(
+                token
+            )}`;
+
+            await prisma.$transaction([
+                prisma.emailChangeToken.deleteMany({
+                    where: {
+                        userId: updated.id,
+                        usedAt: null,
+                    },
+                }),
+                prisma.emailChangeToken.create({
+                    data: {
+                        userId: updated.id,
+                        newEmail: requestedEmailChange,
+                        tokenHash,
+                        expiresAt,
+                    },
+                }),
+            ]);
+
             try {
-                const emailCode = await issueEmailVerificationCode(updated.id);
-                await sendEmailVerificationCode({
-                    toEmail: updated.email,
-                    code: emailCode.code,
+                await sendEmailChangeConfirmationEmail({
+                    toEmail: requestedEmailChange,
+                    confirmationLink,
                 });
             } catch (err) {
-                if (!(err instanceof VerificationCooldownError)) {
-                    console.error("Email verification delivery failure:", err);
-                    deliveryWarnings.push("Email verification delivery failed. Please try again.");
-                } else {
-                    deliveryWarnings.push(err.message);
-                }
+                console.error("Email change confirmation delivery failure:", err);
+                await prisma.emailChangeToken.deleteMany({
+                    where: {
+                        userId: updated.id,
+                        tokenHash,
+                        usedAt: null,
+                    },
+                });
+                deliveryWarnings.push("Could not send confirmation to the new email address.");
+            }
+
+            try {
+                await sendEmailChangeNotice({
+                    toEmail: currentUser.email,
+                    requestedEmail: requestedEmailChange,
+                });
+            } catch (err) {
+                console.error("Email change notice delivery failure:", err);
             }
         }
 
         const payload: Record<string, unknown> = { success: true, user: updated };
-        if (shouldIssueEmailCode) {
-            payload.requiresReauth = true;
+        if (requestedEmailChange) {
+            payload.pendingEmailChange = requestedEmailChange;
         }
         if (deliveryWarnings.length > 0) {
             payload.deliveryWarnings = deliveryWarnings;

@@ -6,6 +6,7 @@ export const VERIFICATION_CODE_TTL_MINUTES = 15;
 export const VERIFICATION_CODE_COOLDOWN_SECONDS = 60;
 export const VERIFICATION_MAX_ATTEMPTS = 5;
 export const PASSWORD_RESET_TTL_MINUTES = 30;
+export const EMAIL_CHANGE_TOKEN_TTL_MINUTES = 60;
 
 export class VerificationCooldownError extends Error {
   retryAfterSeconds: number;

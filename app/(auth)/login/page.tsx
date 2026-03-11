@@ -44,6 +44,22 @@ export default function LoginPage() {
         return () => clearTimeout(timeout);
     }, [resendCooldownSeconds]);
 
+    useEffect(() => {
+        if (typeof window === "undefined") return;
+        const emailChangeStatus = new URLSearchParams(window.location.search).get("emailChange");
+        if (!emailChangeStatus) return;
+
+        if (emailChangeStatus === "success") {
+            setMessage("Email updated successfully. Log in with your new email or your username.");
+        } else if (emailChangeStatus === "expired") {
+            setError("That email confirmation link expired. Request the email change again from profile settings.");
+        } else if (emailChangeStatus === "taken") {
+            setError("That email is no longer available. Request a new email change.");
+        } else if (emailChangeStatus === "invalid") {
+            setError("Invalid email confirmation link.");
+        }
+    }, []);
+
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setLoading(true);

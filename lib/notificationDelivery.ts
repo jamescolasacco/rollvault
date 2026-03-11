@@ -109,3 +109,31 @@ export async function sendPasswordResetEmail({
 
   await sendEmail({ to: toEmail, subject, text, html });
 }
+
+export async function sendEmailChangeConfirmationEmail({
+  toEmail,
+  confirmationLink,
+}: {
+  toEmail: string;
+  confirmationLink: string;
+}) {
+  const subject = `${APP_NAME} confirm your new email address`;
+  const text = `Confirm your new ${APP_NAME} email address by opening this link: ${confirmationLink}. This link expires in 60 minutes.`;
+  const html = `<p>Confirm your new <strong>${APP_NAME}</strong> email address:</p><p><a href="${confirmationLink}">${confirmationLink}</a></p><p>This link expires in 60 minutes.</p>`;
+
+  await sendEmail({ to: toEmail, subject, text, html });
+}
+
+export async function sendEmailChangeNotice({
+  toEmail,
+  requestedEmail,
+}: {
+  toEmail: string;
+  requestedEmail: string;
+}) {
+  const subject = `${APP_NAME} email change requested`;
+  const text = `An email change to ${requestedEmail} was requested for your ${APP_NAME} account. If this was not you, reset your password immediately.`;
+  const html = `<p>An email change to <strong>${requestedEmail}</strong> was requested for your <strong>${APP_NAME}</strong> account.</p><p>If this wasn't you, reset your password immediately.</p>`;
+
+  await sendEmail({ to: toEmail, subject, text, html });
+}
