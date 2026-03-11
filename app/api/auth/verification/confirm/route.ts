@@ -35,6 +35,14 @@ export async function POST(req: Request) {
       orderBy: { createdAt: "desc" },
     });
 
+    const currentUser = await prisma.user.findUnique({
+      where: { id: session.user.id },
+      select: { email: true },
+    });
+    if (!currentUser) {
+      return NextResponse.json({ message: "User not found." }, { status: 404 });
+    }
+
     if (!verification || verification.expiresAt <= new Date()) {
       if (verification && verification.consumedAt === null) {
         await prisma.verificationCode.update({
@@ -78,7 +86,7 @@ export async function POST(req: Request) {
       }),
       prisma.user.update({
         where: { id: session.user.id },
-        data: { emailVerified: true },
+        data: { emailVerified: true, lastVerifiedEmail: currentUser.email },
         select: { emailVerified: true },
       }),
     ]);

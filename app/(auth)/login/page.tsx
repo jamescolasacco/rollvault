@@ -24,25 +24,11 @@ function parseEmailVerificationRequiredError(error: string): number | null {
     return rawCooldown;
 }
 
-function parseEmailRecoverySentError(error: string): number | null {
-    const match = /^EMAIL_RECOVERY_SENT(?::(\d+))?$/.exec(error);
-    if (!match) return null;
-
-    const rawCooldown = match[1]
-        ? Number.parseInt(match[1], 10)
-        : EMAIL_RESEND_COOLDOWN_SECONDS;
-    if (!Number.isFinite(rawCooldown) || rawCooldown < 0) {
-        return EMAIL_RESEND_COOLDOWN_SECONDS;
-    }
-    return rawCooldown;
-}
-
 export default function LoginPage() {
     const router = useRouter();
     const [identifier, setIdentifier] = useState("");
     const [password, setPassword] = useState("");
     const [emailCode, setEmailCode] = useState("");
-    const [recoveryEmail, setRecoveryEmail] = useState("");
     const [totpCode, setTotpCode] = useState("");
     const [authStep, setAuthStep] = useState<"credentials" | "emailVerification" | "mfa">("credentials");
     const [resendCooldownSeconds, setResendCooldownSeconds] = useState(0);
@@ -89,19 +75,6 @@ export default function LoginPage() {
         });
 
         if (res?.error) {
-            const emailRecoveryCooldown = parseEmailRecoverySentError(res.error);
-            if (emailRecoveryCooldown !== null) {
-                setAuthStep("emailVerification");
-                setResendCooldownSeconds(emailRecoveryCooldown);
-                if (emailRecoveryCooldown >= EMAIL_RESEND_COOLDOWN_SECONDS) {
-                    setMessage("Verification code sent to your updated email.");
-                } else {
-                    setMessage(`Email updated. You can resend in ${emailRecoveryCooldown}s.`);
-                }
-                setLoading(false);
-                return;
-            }
-
             const emailVerificationCooldown = parseEmailVerificationRequiredError(res.error);
             if (emailVerificationCooldown !== null) {
                 setAuthStep("emailVerification");
@@ -115,16 +88,9 @@ export default function LoginPage() {
                 return;
             }
 
-            if (res.error === "EMAIL_RECOVERY_INVALID") {
+            if (res.error === "EMAIL_REVERT_UNAVAILABLE") {
                 setAuthStep("emailVerification");
-                setError("Enter a valid recovery email address.");
-                setLoading(false);
-                return;
-            }
-
-            if (res.error === "EMAIL_RECOVERY_TAKEN") {
-                setAuthStep("emailVerification");
-                setError("That recovery email is already in use.");
+                setError("Previous verified email is not available for automatic restore.");
                 setLoading(false);
                 return;
             }
@@ -196,10 +162,7 @@ export default function LoginPage() {
         setLoading(false);
     };
 
-    const handleRecoverEmail = async () => {
-        const nextEmail = recoveryEmail.trim();
-        if (!nextEmail) return;
-
+    const handleRevertToPreviousEmail = async () => {
         setLoading(true);
         setError("");
         setMessage("");
@@ -207,37 +170,33 @@ export default function LoginPage() {
         const res = await signIn("credentials", {
             identifier,
             password,
-            recoveryEmail: nextEmail,
+            revertEmail: "1",
             redirect: false,
         });
 
         if (res?.error) {
-            const emailRecoveryCooldown = parseEmailRecoverySentError(res.error);
-            if (emailRecoveryCooldown !== null) {
-                setResendCooldownSeconds(emailRecoveryCooldown);
-                setRecoveryEmail("");
-                if (emailRecoveryCooldown >= EMAIL_RESEND_COOLDOWN_SECONDS) {
-                    setMessage("Email updated. Verification code sent to the corrected address.");
-                } else {
-                    setMessage(`Email updated. You can resend in ${emailRecoveryCooldown}s.`);
-                }
+            if (res.error === "MFA_REQUIRED") {
+                setAuthStep("mfa");
+                setMessage("Previous email restored. Enter your authenticator code to finish logging in.");
                 setLoading(false);
                 return;
             }
 
-            if (res.error === "EMAIL_RECOVERY_INVALID") {
-                setError("Enter a valid recovery email address.");
+            if (res.error === "MFA_INVALID") {
+                setAuthStep("mfa");
+                setError("Invalid authenticator code.");
                 setLoading(false);
                 return;
             }
 
-            if (res.error === "EMAIL_RECOVERY_TAKEN") {
-                setError("That recovery email is already in use.");
+            if (res.error === "EMAIL_REVERT_UNAVAILABLE") {
+                setAuthStep("emailVerification");
+                setError("Previous verified email is not available for automatic restore.");
                 setLoading(false);
                 return;
             }
 
-            setError("Could not update email. Go back and re-enter your credentials.");
+            setError("Could not restore previous email. Go back and re-enter your credentials.");
             setAuthStep("credentials");
             setResendCooldownSeconds(0);
             setLoading(false);
@@ -330,25 +289,14 @@ export default function LoginPage() {
                                     ? `Resend in ${resendCooldownSeconds}s`
                                     : "Resend Code"}
                             </Button>
-
-                            <div className="pt-2 border-t border-border/50 space-y-2">
-                                <label className="text-sm font-medium text-foreground/80">Wrong email? Use a corrected email</label>
-                                <Input
-                                    type="email"
-                                    value={recoveryEmail}
-                                    onChange={(e) => setRecoveryEmail(e.target.value)}
-                                    placeholder="corrected@example.com"
-                                />
-                                <Button
-                                    type="button"
-                                    variant="outline"
-                                    className="w-full"
-                                    disabled={loading || recoveryEmail.trim().length === 0}
-                                    onClick={handleRecoverEmail}
-                                >
-                                    Update Email & Send Code
-                                </Button>
-                            </div>
+                            <button
+                                type="button"
+                                onClick={handleRevertToPreviousEmail}
+                                disabled={loading}
+                                className="w-full text-xs underline underline-offset-4 text-foreground/60 hover:text-foreground disabled:opacity-50"
+                            >
+                                Wrong email? Restore previous verified email
+                            </button>
                         </>
                     ) : (
                         <>
