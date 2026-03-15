@@ -2,7 +2,7 @@
 
 RollVault is a beautiful, minimalist digital archive for analog photographers. It allows you to organize your developed film rolls, group them into archives, and share your photography portfolio through a stunning, cinematic horizontal film-strip interface.
 
-## ✨ Features
+## Features
 
 *   **Cinematic Roll View:** A horizontally scrolling, photorealistic film-strip viewer for showcasing your frames.
 *   **Public Profiles:** A sleek "Linktree-style" public profile page where you can share your entire portfolio (`yourdomain.com/username`).
@@ -12,7 +12,7 @@ RollVault is a beautiful, minimalist digital archive for analog photographers. I
 *   **Live Vault metrics:** Keep track of your total frames, rolls, and archives.
 *   **Account Security:** Email verification gate on login, optional authenticator app MFA (TOTP), password reset, login via email/username, pending email-change confirmation flow, and automatic purge of unverified accounts older than 24 hours.
 
-## 🛠 Tech Stack
+## Tech Stack
 
 RollVault is built with modern, high-performance web technologies:
 
@@ -24,9 +24,9 @@ RollVault is built with modern, high-performance web technologies:
 *   **Authentication:** NextAuth.js (Credentials Provider)
 *   **Icons:** Lucide React
 
-## 🚀 Getting Started
+## Getting Started
 
-RollVault is designed to be self-hosted. By default, it uses a local SQLite database and saves uploads directly to the local filesystem, making it incredibly easy to spin up on a small VPS or Raspberry Pi.
+RollVault can be found at [rollvault.io](https://rollvault.io/). By default, it uses a local SQLite database and saves uploads directly to the local filesystem, making it incredibly easy to spin up on a small VPS or Raspberry Pi.
 
 ### Prerequisites
 *   Node.js (v18 or newer)
@@ -75,16 +75,16 @@ RollVault is designed to be self-hosted. By default, it uses a local SQLite data
 6.  **Create your account**
     Open `http://localhost:3012` in your browser, hit the register button, and create your first photographer account!
 
-## 🔐 Privacy & Storage
+## Privacy & Storage
 
 Out of the box, RollVault is local-first.
 - All user accounts, rolls, and metadata are stored in `prisma/dev.db`.
 - All uploaded film scans are stored in `public/uploads/`.
-- Neither of these paths are tracked by Git, keeping your portfolio completely private even if you fork or push this repository string. 
+- Neither of these paths are tracked by Git, keeping your portfolio completely private even if you fork or PR this repository. 
 
-If you plan to scale RollVault or deploy to a serverless platform (like Vercel), you will need to swap the SQLite provider to PostgreSQL in `schema.prisma` and implement an external S3-compatible storage provider (like AWS S3 or Cloudflare R2).
+If you plan to deploy to a serverless platform (like Vercel), you will need to swap the SQLite provider to PostgreSQL in `schema.prisma` and implement an external S3-compatible storage provider (like AWS S3 or Cloudflare R2).
 
-## 📬 Verification Delivery Setup
+## Verification Delivery Setup
 
 To make verification and password reset delivery reliable in production:
 
