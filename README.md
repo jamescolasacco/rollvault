@@ -6,10 +6,10 @@ RollVault is a beautiful, minimalist digital archive for analog photographers. O
 
 ## Features
 
-*   **Cinematic Roll View:** A horizontally scrolling, photorealistic film-strip viewer for showcasing your frames.
-*   **Public Profiles:** A sleek public profile page where you can share your entire portfolio (`rollvault.app/username`).
+*   **Cinematic Roll View:** A horizontally scrolling strip viewer for showcasing your frames.
+*   **Public Profiles:** A sleek public profile page where you can share your entire portfolio (`rollvault.io/u/username`).
 *   **Archives:** Organize your rolls into thematic collections (e.g., "Summer '23", "Portraits").
-*   **Drag & Drop Uploading:** Easily batch upload your high-res film scans into a roll.
+*   **Drag & Drop Uploading:** Easily batch upload your high res film scans into a roll.
 *   **Cover Customization:** Set custom cover images or let RollVault automatically select the first frame.
 *   **Live Vault Metrics:** Keep track of your total frames, rolls, and archives.
 *   **Account Security:** Email verification, optional authenticator app MFA (TOTP), password reset, and login via email or username.
@@ -21,7 +21,6 @@ RollVault is a beautiful, minimalist digital archive for analog photographers. O
 *   **Styling:** Tailwind CSS + custom CSS animations
 *   **Database:** SQLite / Prisma ORM
 *   **Authentication:** NextAuth.js (Credentials Provider)
-*   **Icons:** Lucide React
 
 ## Contributing
 
@@ -29,7 +28,7 @@ RollVault's source is open so the community can follow along, report bugs, and c
 
 1.  **Clone the repository**
     ```bash
-    git clone https://github.com/yourusername/rollvault.git
+    git clone https://github.com/jamescolasacco/rollvault.git
     cd rollvault
     ```
 
