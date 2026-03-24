@@ -1,4 +1,4 @@
-# RollVault 🎞️
+# RollVault
 
 RollVault is a beautiful, minimalist digital archive for analog photographers. It allows you to organize your developed film rolls, group them into archives, and share your photography portfolio through a stunning, cinematic horizontal film-strip interface.
 
@@ -22,7 +22,6 @@ RollVault is built with modern, high-performance web technologies:
 *   **Database:** SQLite (Default, local-first)
 *   **ORM:** [Prisma](https://www.prisma.io/)
 *   **Authentication:** NextAuth.js (Credentials Provider)
-*   **Icons:** Lucide React
 
 ## Getting Started
 
