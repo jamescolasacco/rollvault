@@ -1,10 +1,10 @@
-# RollVault 🎞️
+# RollVault
 
 RollVault is a beautiful, minimalist digital archive for analog photographers. Organize your developed film rolls, group them into archives, and share your photography portfolio through a cinematic horizontal film-strip interface — all in one place.
 
 > **RollVault is a free public service.** Sign up and start sharing your film photography today. The source code is open for transparency and community contributions.
 
-## ✨ Features
+## Features
 
 *   **Cinematic Roll View:** A horizontally scrolling, photorealistic film-strip viewer for showcasing your frames.
 *   **Public Profiles:** A sleek public profile page where you can share your entire portfolio (`rollvault.app/username`).
@@ -14,7 +14,7 @@ RollVault is a beautiful, minimalist digital archive for analog photographers. O
 *   **Live Vault Metrics:** Keep track of your total frames, rolls, and archives.
 *   **Account Security:** Email verification, optional authenticator app MFA (TOTP), password reset, and login via email or username.
 
-## 🛠 Tech Stack
+## Tech Stack
 
 *   **Framework:** [Next.js](https://nextjs.org/) (App Router)
 *   **Language:** TypeScript
@@ -23,7 +23,7 @@ RollVault is a beautiful, minimalist digital archive for analog photographers. O
 *   **Authentication:** NextAuth.js (Credentials Provider)
 *   **Icons:** Lucide React
 
-## 🤝 Contributing
+## Contributing
 
 RollVault's source is open so the community can follow along, report bugs, and contribute improvements. If you'd like to run a local development environment to contribute:
 
